@@ -660,8 +660,6 @@
                              alt="Foto del vehículo"
                              class="vehicleModalImg mb-3 d-none">
 
-                        <p class="text-secondary small mb-3" id="modalSubtituloVehiculo">Nombre y placa</p>
-
                         <div class="mb-4">
                             <label class="appleFormLabel" for="modalAgreedAmount">Tu Oferta de Compra ($)</label>
                             <input type="number" step="any" min="1" id="modalAgreedAmount" name="agreedAmount" class="appleInput" required>
@@ -850,7 +848,7 @@
                 boton.addEventListener("click", () => {
                     document.getElementById("modalVehicleId").value = boton.dataset.carId;
                     document.getElementById("modalTituloVehiculo").textContent = boton.dataset.model + " (" + boton.dataset.plate + ")";
-                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + boton.dataset.owner + dataset.ownerName;
+                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + boton.dataset.owner;
 
                     if (modalImg) {
                         const imageUrl = boton.dataset.imageUrl;
