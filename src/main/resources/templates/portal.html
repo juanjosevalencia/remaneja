@@ -307,7 +307,7 @@
                                      style="font-variant-numeric: tabular-nums;"
                                      th:text="${auto.price != null ? '$' + #numbers.formatDecimal(auto.price, 1, 'POINT', 0, 'COMMA') : '$0'}">$78.500.000</div>
                                 <span class="text-secondary small d-block mt-1"
-                                      th:text="'Propietario ID #' + ${auto.ownerId}">Propietario</span>
+                                      th:text="'Publicado por ' + ${auto.ownerName}">Propietario</span>
                             </div>
                         </div>
 
