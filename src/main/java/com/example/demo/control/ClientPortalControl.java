@@ -27,6 +27,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class ClientPortalControl {
 
+    @GetMapping("/")
+    public String inicio() {
+        return "redirect:/portal";
+    }
+
     private final UserService userService;
     private final VehicleService vehicleService;
     private final PurchaseAgreementService purchaseAgreementService;

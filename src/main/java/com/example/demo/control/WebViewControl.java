@@ -31,7 +31,7 @@ public class WebViewControl {
     }
 
     // ==================== PÁGINA PRINCIPAL ====================
-    @GetMapping("/")
+    @GetMapping("/webview")
     public String mostrarPaginaPrincipal(Model model) {
         List<Vehicle> listaVehiculos = vehicleService.listarVehiculos();
         model.addAttribute("listaVehiculos", listaVehiculos);
