@@ -307,7 +307,7 @@
                                      style="font-variant-numeric: tabular-nums;"
                                      th:text="${auto.price != null ? '$' + #numbers.formatDecimal(auto.price, 1, 'POINT', 0, 'COMMA') : '$0'}">$78.500.000</div>
                                 <span class="text-secondary small d-block mt-1"
-                                      th:text="'Publicado por: ' + ${auto.ownerName}">Propietario</span>
+                                      th:text="'Publicado por: ' + ${auto.ownerName != null && !auto.ownerName.isBlank() ? auto.ownerName : 'Vendedor verificado'}">Propietario</span>
                             </div>
                         </div>
 
@@ -318,7 +318,7 @@
                                     th:attr="data-car-id=${auto.carId},
                                              data-model=${auto.model},
                                              data-plate=${auto.plate},
-                                             data-owner=${'ID #' + auto.ownerId},
+                                             data-owner=${auto.ownerName != null && !auto.ownerName.isBlank() ? auto.ownerName : 'Vendedor verificado'},
                                              data-price=${auto.price},
                                              data-image-url=${(auto.imageType != null && !auto.imageType.isBlank()) ? '/portal/vehicle/' + auto.carId + '/image' : ''}">
                                 Hacer Oferta de Compra
@@ -343,7 +343,7 @@
                         <p class="eyebrowLabel">Vender Vehículo</p>
                         <h2 class="sectionHeading mb-1">Publicar mi Auto en Remaneja</h2>
                         <p class="text-secondary small mb-4">
-                            Se publicará a nombre de <strong class="text-white" th:text="${clienteLogueado.name}">Cliente</strong> (ID <span th:text="${clienteLogueado.id}">123</span>).
+                            Se publicará a nombre de <strong class="text-white" th:text="${clienteLogueado.name}">Cliente</strong>.
                         </p>
 
                         <form th:action="@{/portal/publish}" th:object="${vehiculoNuevo}" method="post" enctype="multipart/form-data">
@@ -510,8 +510,8 @@
                                         <span class="metaValue" th:text="'#' + ${venta.vehicleId}">#5001</span>
                                     </div>
                                     <div>
-                                        <span class="metaLabel">Comprador ID</span>
-                                        <span class="metaValue" th:text="${venta.buyerId}">1009876543</span>
+                                        <span class="metaLabel">Comprador</span>
+                                        <span class="metaValue" th:text="${venta.buyerName != null && !venta.buyerName.isBlank() ? venta.buyerName : 'Cliente interesado'}">Cliente interesado</span>
                                     </div>
                                 </div>
                                 <span class="statusPill"
@@ -660,7 +660,7 @@
                              alt="Foto del vehículo"
                              class="vehicleModalImg mb-3 d-none">
 
-                        <p class="text-secondary small mb-3" id="modalSubtituloVehiculo"></p>
+                        <p class="text-secondary small mb-3" id="modalSubtituloVehiculo">Propietario y placa</p>
 
                         <div class="mb-4">
                             <label class="appleFormLabel" for="modalAgreedAmount">Tu Oferta de Compra ($)</label>
@@ -850,7 +850,7 @@
                 boton.addEventListener("click", () => {
                     document.getElementById("modalVehicleId").value = boton.dataset.carId;
                     document.getElementById("modalTituloVehiculo").textContent = boton.dataset.model + " (" + boton.dataset.plate + ")";
-                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + boton.dataset.owner;
+                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + (boton.dataset.owner || "Vendedor verificado");
 
                     if (modalImg) {
                         const imageUrl = boton.dataset.imageUrl;
