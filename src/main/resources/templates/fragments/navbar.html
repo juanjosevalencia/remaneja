@@ -23,17 +23,16 @@
                    th:href="@{/web/vehicles}">Vehículos</a>
                 <a class="appleNavLink"
                    th:classappend="${activePage == 'users'} ? 'active' : ''"
-                   th:href="@{/users}">Usuarios</a>
+                   th:href="@{/web/users}">Usuarios</a>
                 <a class="appleNavLink"
                    th:classappend="${activePage == 'agreements'} ? 'active' : ''"
-                   th:href="@{/purchase-agreements}">Acuerdos</a>
+                   th:href="@{/web/purchase-agreements}">Acuerdos</a>
                 <a class="appleNavLink"
                    th:classappend="${activePage == 'reports'} ? 'active' : ''"
-                   th:href="@{/reports}">Reportes</a>
+                   th:href="@{/web/reports}">Reportes</a>
                 <a class="appleNavLink"
                    th:classappend="${activePage == 'business'} ? 'active' : ''"
-                   th:href="@{/business}">Negocio</a>
-                <a class="appleNavLink" th:href="@{/portal(tab='catalogo')}">Portal</a>
+                   th:href="@{/web/business}">Negocio</a>
             </div>
 
             <!-- Botón Cerrar sesión en escritorio -->
