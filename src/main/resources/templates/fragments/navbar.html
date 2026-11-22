@@ -19,7 +19,7 @@
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'acuerdos'} ? 'active' : ''" th:href="@{/web/purchaseagreements}">Acuerdos</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'informes'} ? 'active' : ''" th:href="@{/web/reports}">Informes</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'negocio'} ? 'active' : ''" th:href="@{/web/business}">Negocio</a>
-                    <a class="appleNavLink" th:classappend="${paginaActiva == 'logout'} ? 'active' : ''" th:href="@{/logout}">Cerrar sesiÃ³n</a>
+                    <a class="appleNavLink" th:classappend="${} ? 'active' : ''" th:href="@{/logout}">Cerrar sesión</a>
                 </div>
 
                 <!-- BotÃ³n pÃ­ldora Liquid Glass (MÃ³vil) -->
@@ -74,8 +74,8 @@
                     <span class="liquidItemDesc">Sala de cierre</span>
                 </a>
 
-                <a class="liquidGridItem" th:classappend="${paginaActiva == 'logout'} ? 'active' : ''" th:href="@{/logout}"></a>
-                    <span class="liquidItemName">Cerrar sesiÃ³n</span>
+                <a class="liquidGridItem" : th:href="@{/logout}"></a>
+                    <span class="liquidItemName">Cerrar sesión</span>
                     <span class="liquidItemDesc">Salir de tu cuenta</span>
                 </a>
 
