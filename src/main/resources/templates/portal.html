@@ -443,6 +443,7 @@
         <!-- ==================== 3. CONSULTAR PROCESOS ==================== -->
         <section th:if="${clienteLogueado != null && tabActiva == 'procesos'}">
             <div class="row g-4">
+                <!-- Columna 1: Mis Ofertas de Compra -->
                 <div class="col-lg-6">
                     <h2 class="sectionHeading mb-3">Mis Ofertas de Compra</h2>
                     <div class="appleCard p-4 text-center" th:if="${#lists.isEmpty(misOfertasEnviadas)}">
@@ -467,12 +468,22 @@
                                       th:classappend="${compra.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${compra.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
                                       th:text="${compra.agreementStatus}">PENDIENTE</span>
                             </div>
+
                             <div class="orderCardBody">
-                                <div>
-                                    <span class="metaLabel">Mi Oferta Enviada</span>
-                                    <span class="fs-5 fw-semibold"
-                                          th:text="${compra.agreedAmount != null ? '$' + #numbers.formatDecimal(compra.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img th:src="@{/portal/vehicle/{id}/image(id=${compra.vehicleId})}"
+                                         th:alt="'Vehículo #' + ${compra.vehicleId}"
+                                         class="vehicleProfileThumb"
+                                         onerror="this.style.display='none';">
+                                    <div>
+                                        <span class="metaLabel">Mi Oferta Enviada</span>
+                                        <span class="fs-5 fw-semibold d-block"
+                                              style="font-variant-numeric: tabular-nums;"
+                                              th:text="${compra.agreedAmount != null ? '$' + #numbers.formatDecimal(compra.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                        <span class="text-secondary small" th:text="'Código vehículo #' + ${compra.vehicleId}">Código vehículo #5001</span>
+                                    </div>
                                 </div>
+
                                 <div class="d-flex flex-wrap gap-2">
                                     <a th:if="${compra.agreementStatus == 'FINALIZADO'}"
                                        th:href="@{/portal/order/{agreementId}/pdf(agreementId=${compra.id})}"
@@ -491,6 +502,7 @@
                     </div>
                 </div>
 
+                <!-- Columna 2: Ofertas Recibidas por mis Autos -->
                 <div class="col-lg-6">
                     <h2 class="sectionHeading mb-3">Ofertas Recibidas por mis Autos</h2>
                     <div class="appleCard p-4 text-center" th:if="${#lists.isEmpty(ofertasRecibidas)}">
@@ -518,12 +530,22 @@
                                       th:classappend="${venta.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${venta.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
                                       th:text="${venta.agreementStatus}">PENDIENTE</span>
                             </div>
+
                             <div class="orderCardBody">
-                                <div>
-                                    <span class="metaLabel">Monto Ofertado</span>
-                                    <span class="fs-5 fw-semibold"
-                                          th:text="${venta.agreedAmount != null ? '$' + #numbers.formatDecimal(venta.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img th:src="@{/portal/vehicle/{id}/image(id=${venta.vehicleId})}"
+                                         th:alt="'Vehículo #' + ${venta.vehicleId}"
+                                         class="vehicleProfileThumb"
+                                         onerror="this.style.display='none';">
+                                    <div>
+                                        <span class="metaLabel">Monto Ofertado</span>
+                                        <span class="fs-5 fw-semibold d-block"
+                                              style="font-variant-numeric: tabular-nums;"
+                                              th:text="${venta.agreedAmount != null ? '$' + #numbers.formatDecimal(venta.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                        <span class="text-secondary small" th:text="'Vehículo #' + ${venta.vehicleId}">Vehículo #5001</span>
+                                    </div>
                                 </div>
+
                                 <div class="d-flex flex-wrap gap-2">
                                     <a th:if="${venta.agreementStatus == 'FINALIZADO'}"
                                        th:href="@{/portal/order/{agreementId}/pdf(agreementId=${venta.id})}"
