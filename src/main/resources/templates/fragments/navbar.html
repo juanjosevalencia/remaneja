@@ -19,19 +19,20 @@
                    th:classappend="${activePage == 'admin'} ? 'active' : ''"
                    th:href="@{/admin}">Panel</a>
                 <a class="appleNavLink"
-                   th:classappend="${activePage == 'vehicles'} ? 'active' : ''"
-                   th:href="@{/web/vehicles}">Vehículos</a>
+                th:classappend="${activePage == 'vehicles'} ? 'active' : ''"
+                th:href="@{/vehicles}">Vehículos</a>
                 <a class="appleNavLink"
-                   th:classappend="${activePage == 'users'} ? 'active' : ''"
-                   th:href="@{/web/users}">Usuarios</a>
+                th:classappend="${activePage == 'users'} ? 'active' : ''"
+                th:href="@{/users}">Usuarios</a>
                 <a class="appleNavLink"
-                   th:classappend="${activePage == 'agreements'} ? 'active' : ''" th:href="@{/web/purchase-agreements}">Acuerdos</a>
+                th:classappend="${activePage == 'agreements'} ? 'active' : ''"
+                th:href="@{/purchase-agreements}">Acuerdos</a>
                 <a class="appleNavLink"
-                   th:classappend="${activePage == 'reports'} ? 'active' : ''"
-                   th:href="@{/web/reports}">Reportes</a>
+                th:classappend="${activePage == 'reports'} ? 'active' : ''"
+                th:href="@{/reports}">Reportes</a>
                 <a class="appleNavLink"
-                   th:classappend="${activePage == 'business'} ? 'active' : ''"
-                   th:href="@{/web/business}">Negocio</a>
+                th:classappend="${activePage == 'business'} ? 'active' : ''"
+                th:href="@{/business}">Negocio</a>
             </div>
 
             <!-- Botón Cerrar sesión en escritorio -->
