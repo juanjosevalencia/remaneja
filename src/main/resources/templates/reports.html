@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaneja — Informes y Filtrado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/remaneja.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: liquidNavbar('informes')}"></div>
+
+    <header class="accountHeader">
+        <div class="container">
+            <div class="row align-items-end g-3">
+                <div class="col-lg-8">
+                    <p class="eyebrowLabel">Analítica y Auditoría</p>
+                    <h1 class="heroTitle">Informes y Filtrado de Flota</h1>
+                    <p class="heroSubtitle">Consulta indicadores financieros, filtra inventario por criterios y exporta reportes ejecutivos.</p>
+                </div>
+                <div class="col-lg-4 d-flex justify-content-lg-end noPrint">
+                    <button type="button" onclick="window.print()" class="btnAppleSecondary">Imprimir / Guardar PDF</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container my-5">
+
+        <!-- KPIs Financieros y Comerciales -->
+        <section class="mb-5">
+            <div class="row g-3">
+                <div class="col-sm-6 col-xl-3">
+                    <div class="appleCard p-4 h-100">
+                        <span class="metaLabel mb-2">Ventas Cerradas</span>
+                        <div class="metricNumber fs-3"
+                             th:text="'$' + ${#numbers.formatDecimal(totalVentasCerradas, 1, 'POINT', 0, 'COMMA')}">$0</div>
+                        <p class="text-secondary small mt-2 mb-0">Ingresos confirmados en acuerdos finalizados.</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="appleCard p-4 h-100">
+                        <span class="metaLabel mb-2">En Negociación</span>
+                        <div class="metricNumber fs-3"
+                             th:text="'$' + ${#numbers.formatDecimal(totalEnNegociacion, 1, 'POINT', 0, 'COMMA')}">$0</div>
+                        <p class="text-secondary small mt-2 mb-0">Monto comprometido en reservas activas.</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="appleCard p-4 h-100">
+                        <span class="metaLabel mb-2">Capital Disponible</span>
+                        <div class="metricNumber fs-3"
+                             th:text="'$' + ${#numbers.formatDecimal(valorInventarioDisponible, 1, 'POINT', 0, 'COMMA')}">$0</div>
+                        <p class="text-secondary small mt-2 mb-0">Valor total de vehículos listos para venta.</p>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl-3">
+                    <div class="appleCard p-4 h-100">
+                        <span class="metaLabel mb-2">Unidades Vendidas</span>
+                        <div class="metricNumber fs-3" th:text="${cantidadVendidos}">0</div>
+                        <p class="text-secondary small mt-2 mb-0">Vehículos transferidos exitosamente.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Barra de Filtrado Multicriterio -->
+        <section class="appleCard p-4 mb-4 noPrint">
+            <form th:action="@{/web/reports}" method="get" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="appleFormLabel" for="keyword">Búsqueda (Placa, Modelo o Propietario)</label>
+                    <input type="text" id="keyword" name="keyword" th:value="${keyword}" class="appleInput" placeholder="Ej. Mazda, KLM456, Juan...">
+                </div>
+                <div class="col-md-3">
+                    <label class="appleFormLabel" for="salesStatus">Estado Comercial</label>
+                    <select id="salesStatus" name="salesStatus" class="appleSelect">
+                        <option value="TODOS" th:selected="${salesStatus == null || salesStatus == 'TODOS'}">Todos los estados</option>
+                        <option value="DISPONIBLE" th:selected="${salesStatus == 'DISPONIBLE'}">DISPONIBLE</option>
+                        <option value="RESERVADO" th:selected="${salesStatus == 'RESERVADO'}">RESERVADO</option>
+                        <option value="VENDIDO" th:selected="${salesStatus == 'VENDIDO'}">VENDIDO</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="appleFormLabel" for="type">Carrocería</label>
+                    <input type="text" id="type" name="type" th:value="${type}" class="appleInput" placeholder="Sedan, SUV...">
+                </div>
+                <div class="col-md-3">
+                    <label class="appleFormLabel" for="maxPrice">Precio Máximo ($)</label>
+                    <input type="number" step="0.01" id="maxPrice" name="maxPrice" th:value="${maxPrice}" class="appleInput" placeholder="Ej. 85000000">
+                </div>
+                <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <a th:href="@{/web/reports}" class="btnAppleSecondary btnAppleSmall">Limpiar filtros</a>
+                    <button type="submit" class="btnApplePrimary btnAppleSmall">Aplicar filtros</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- Tabla de Resultados Filtrados -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-baseline mb-3">
+                <h2 class="sectionHeading mb-0">Resultados del Inventario</h2>
+                <span class="text-secondary small" th:text="${#lists.size(listaVehiculosFiltrados)} + ' coincidencias'">0 coincidencias</span>
+            </div>
+
+            <div class="appleCard overflow-hidden">
+                <div class="p-5 text-center" th:if="${#lists.isEmpty(listaVehiculosFiltrados)}">
+                    <h6 class="fw-semibold mb-1">Ningún vehículo coincide con los filtros aplicados</h6>
+                    <p class="text-secondary small mb-0">Prueba ampliando el precio máximo o limpiando la búsqueda.</p>
+                </div>
+
+                <div class="appleTableWrapper" th:unless="${#lists.isEmpty(listaVehiculosFiltrados)}">
+                    <table class="appleTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Placa</th>
+                                <th>Vehículo</th>
+                                <th>Año / Km</th>
+                                <th>Propietario Actual</th>
+                                <th>Estado</th>
+                                <th class="text-end">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="v : ${listaVehiculosFiltrados}">
+                                <td th:text="'#' + ${v.carId}">#5001</td>
+                                <td class="fw-semibold" th:text="${v.plate}">KLM456</td>
+                                <td>
+                                    <div class="fw-medium" th:text="${v.model}">Mazda 3</div>
+                                    <div class="text-secondary small" th:text="${v.type} + ' • ' + ${v.color}">Sedan</div>
+                                </td>
+                                <td>
+                                    <span th:text="${v.releaseYear}">2021</span>
+                                    <span class="text-secondary small d-block"
+                                          th:text="${v.kms != null ? #numbers.formatInteger(v.kms, 1, 'POINT') + ' km' : '0 km'}">42.000 km</span>
+                                </td>
+                                <td>
+                                    <span th:text="${v.ownerName}">Juan</span>
+                                    <span class="text-secondary small d-block" th:text="'ID: ' + ${v.ownerId}">ID</span>
+                                </td>
+                                <td>
+                                    <span class="statusPill"
+                                          th:classappend="${v.salesStatus == 'VENDIDO'} ? 'statusVendido' : (${v.salesStatus == 'RESERVADO'} ? 'statusReservado' : 'statusDisponible')"
+                                          th:text="${v.salesStatus}">DISPONIBLE</span>
+                                </td>
+                                <td class="text-end fw-semibold"
+                                    th:text="${v.price != null ? '$' + #numbers.formatDecimal(v.price, 1, 'POINT', 0, 'COMMA') : '$0'}">$78.500.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Historial Consolidado de Acuerdos -->
+        <section>
+            <h2 class="sectionHeading mb-3">Libro de Transacciones (Acuerdos)</h2>
+            <div class="appleCard overflow-hidden">
+                <div class="p-4 text-center text-secondary small" th:if="${#lists.isEmpty(listaAcuerdos)}">
+                    No existen acuerdos registrados en el historial.
+                </div>
+                <div class="appleTableWrapper" th:unless="${#lists.isEmpty(listaAcuerdos)}">
+                    <table class="appleTable">
+                        <thead>
+                            <tr>
+                                <th>Acuerdo</th>
+                                <th>Vehículo ID</th>
+                                <th>Vendedor ID</th>
+                                <th>Comprador ID</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th class="text-end">Monto Acordado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="a : ${listaAcuerdos}">
+                                <td class="fw-semibold" th:text="'#' + ${a.id}">#9001</td>
+                                <td th:text="'#' + ${a.vehicleId}">#5001</td>
+                                <td th:text="${a.sellerId}">1001234567</td>
+                                <td th:text="${a.buyerId}">1009876543</td>
+                                <td th:text="${a.agreementDate != null ? #strings.replace(a.agreementDate.toString().substring(0, 16), 'T', ' ') : '—'}">Fecha</td>
+                                <td>
+                                    <span class="statusPill"
+                                          th:classappend="${a.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${a.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
+                                          th:text="${a.agreementStatus}">FINALIZADO</span>
+                                </td>
+                                <td class="text-end fw-semibold"
+                                    th:text="${a.agreedAmount != null ? '$' + #numbers.formatDecimal(a.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="appleFooter">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>Remaneja — Reportes e Inteligencia Comercial</span>
+            <span>Spring Boot • Thymeleaf • MySQL</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

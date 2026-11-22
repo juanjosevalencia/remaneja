@@ -1,0 +1,1214 @@
+:root {
+    --bgCanvas: #111215;
+    --bgSurface: #1b1c20;
+    --bgSubtle: #22242a;
+    --textPrimary: #f5f5f7;
+    --textSecondary: #a1a1a6;
+    --textTertiary: #76767c;
+    --accentBlue: #2997ff;
+    --accentBlueHover: #47a6ff;
+    --borderLight: rgba(255, 255, 255, 0.09);
+    --shadowSoft: 0 8px 28px rgba(0, 0, 0, 0.35);
+    --shadowHover: 0 12px 36px rgba(0, 0, 0, 0.55);
+    --radiusCard: 20px;
+    --radiusPill: 980px;
+    --easeApple: cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+body {
+    background-color: var(--bgCanvas);
+    color: var(--textPrimary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+    margin: 0;
+    padding-top: 64px;
+}
+
+.text-secondary {
+    color: var(--textSecondary) !important;
+}
+
+/* ==================== BARRA SUPERIOR FIJA Y MENÚ LIQUID GLASS ==================== */
+.liquidNavbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1040;
+    min-height: 56px;
+    height: auto;
+    padding: 8px 0;
+    background: linear-gradient(180deg, rgba(28, 30, 36, 0.84) 0%, rgba(20, 21, 26, 0.74) 100%);
+    backdrop-filter: blur(26px) saturate(200%);
+    -webkit-backdrop-filter: blur(26px) saturate(200%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.liquidNavbar .brandLogo {
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: -0.02em;
+    color: var(--textPrimary);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.brandDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f5f5f7 0%, #86868b 100%);
+    display: inline-block;
+    transition: transform 0.3s var(--easeApple), box-shadow 0.3s var(--easeApple);
+}
+
+.liquidNavbar .brandLogo:hover .brandDot {
+    transform: scale(1.25);
+    box-shadow: 0 0 14px rgba(255, 255, 255, 0.65);
+}
+
+/* Enlaces en escritorio con gota de luz líquida */
+.liquidDesktopLinks,
+.clientNavPills {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.appleNavLink {
+    position: relative;
+    overflow: hidden;
+    --mouseX: 50%;
+    --mouseY: 50%;
+    color: var(--textSecondary);
+    font-size: 0.85rem;
+    font-weight: 400;
+    text-decoration: none;
+    padding: 6px 13px;
+    border-radius: var(--radiusPill);
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: color 0.25s var(--easeApple),
+                background-color 0.25s var(--easeApple),
+                border-color 0.25s var(--easeApple),
+                transform 0.24s var(--easeApple);
+}
+
+.appleNavLink::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle 48px at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.26) 0%,
+                rgba(41, 151, 255, 0.12) 50%,
+                transparent 80%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.appleNavLink:hover {
+    color: var(--textPrimary);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-1px);
+}
+
+.appleNavLink:hover::before {
+    opacity: 1;
+}
+
+.appleNavLink:active {
+    transform: scale(0.97);
+}
+
+.appleNavLink.active {
+    color: var(--textPrimary);
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Botón disparador Liquid Glass (solo móvil) */
+.liquidGlassTrigger {
+    position: relative;
+    overflow: hidden;
+    --mouseX: 50%;
+    --mouseY: 50%;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 15px;
+    border-radius: var(--radiusPill);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    color: var(--textPrimary);
+    font-size: 0.84rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.24s var(--easeApple),
+                background 0.25s var(--easeApple),
+                box-shadow 0.25s var(--easeApple);
+}
+
+.liquidGlassTrigger::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle 55px at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.32) 0%,
+                transparent 75%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.liquidGlassTrigger:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.09) 100%);
+    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.liquidGlassTrigger:hover::before {
+    opacity: 1;
+}
+
+.liquidGlassTrigger:active {
+    transform: scale(0.95);
+}
+
+/* Icono minimalista de 2 líneas estilo Apple */
+.liquidMenuIcon {
+    width: 15px;
+    height: 10px;
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.liquidMenuIcon span {
+    display: block;
+    width: 100%;
+    height: 1.6px;
+    background-color: var(--textPrimary);
+    border-radius: 2px;
+    transition: transform 0.3s var(--easeApple), opacity 0.25s var(--easeApple);
+}
+
+.liquidGlassTrigger.isOpen .liquidMenuIcon span:first-child {
+    transform: translateY(4.2px) rotate(45deg);
+}
+
+.liquidGlassTrigger.isOpen .liquidMenuIcon span:last-child {
+    transform: translateY(-4.2px) rotate(-45deg);
+}
+
+/* Panel flotante Liquid Glass con cáustica ambiental */
+.liquidGlassPanel {
+    position: fixed;
+    top: 66px;
+    left: 14px;
+    right: 14px;
+    z-index: 1039;
+    overflow: hidden;
+    --mouseX: 50%;
+    --mouseY: 50%;
+    padding: 14px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, rgba(42, 45, 55, 0.66) 0%, rgba(22, 24, 30, 0.56) 100%);
+    backdrop-filter: blur(32px) saturate(220%);
+    -webkit-backdrop-filter: blur(32px) saturate(220%);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.65),
+                inset 0 1px 1px rgba(255, 255, 255, 0.32),
+                inset 0 -1px 1px rgba(255, 255, 255, 0.06);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px) scale(0.97);
+    transform-origin: top center;
+    transition: opacity 0.28s var(--easeApple),
+                transform 0.32s var(--easeApple),
+                visibility 0.28s var(--easeApple);
+}
+
+.liquidGlassPanel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle 220px at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.13) 0%,
+                rgba(41, 151, 255, 0.06) 45%,
+                transparent 75%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.liquidGlassPanel.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.liquidPanelHeader {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 6px 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 12px;
+}
+
+.liquidPanelTitle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--textSecondary);
+}
+
+/* Cuadrícula 2x3 dentro del panel Liquid Glass */
+.liquidMenuGrid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.liquidGridItem {
+    position: relative;
+    overflow: hidden;
+    --mouseX: 50%;
+    --mouseY: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 13px 15px;
+    border-radius: 16px;
+    text-decoration: none;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    transition: background 0.25s var(--easeApple),
+                border-color 0.25s var(--easeApple),
+                border-radius 0.35s var(--easeApple),
+                box-shadow 0.28s var(--easeApple),
+                transform 0.26s var(--easeApple);
+}
+
+.liquidGridItem::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle 115px at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.28) 0%,
+                rgba(41, 151, 255, 0.14) 45%,
+                transparent 78%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.liquidGridItem::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -130%;
+    width: 85%;
+    height: 200%;
+    background: linear-gradient(105deg,
+                transparent 20%,
+                rgba(255, 255, 255, 0.24) 50%,
+                transparent 80%);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    transition: left 0.65s var(--easeApple);
+}
+
+.liquidGridItem:hover {
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.06) 100%);
+    border-color: rgba(255, 255, 255, 0.28);
+    border-radius: 19px 14px 19px 14px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.38),
+                inset 0 1px 1px rgba(255, 255, 255, 0.35),
+                inset 0 -1px 0 rgba(41, 151, 255, 0.22);
+    transform: translateY(-1px);
+}
+
+.liquidGridItem:hover::before {
+    opacity: 1;
+}
+
+.liquidGridItem:hover::after {
+    left: 165%;
+}
+
+.liquidGridItem:active {
+    transform: scale(0.96);
+    border-radius: 16px;
+}
+
+.liquidGridItem.active {
+    background: linear-gradient(135deg, rgba(41, 151, 255, 0.34) 0%, rgba(41, 151, 255, 0.16) 100%);
+    border-color: rgba(41, 151, 255, 0.58);
+    box-shadow: 0 6px 18px rgba(41, 151, 255, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.liquidItemName {
+    position: relative;
+    z-index: 1;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--textPrimary);
+    line-height: 1.2;
+}
+
+.liquidItemDesc {
+    position: relative;
+    z-index: 1;
+    font-size: 0.72rem;
+    color: var(--textSecondary);
+    margin-top: 3px;
+}
+
+.liquidGridItem.active .liquidItemDesc {
+    color: #b8dcff;
+}
+
+.liquidBackdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1038;
+    background: rgba(8, 9, 12, 0.42);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.28s var(--easeApple), visibility 0.28s var(--easeApple);
+}
+
+.liquidBackdrop.open {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ==================== ENCABEZADO DE PÁGINA ==================== */
+.accountHeader {
+    background: linear-gradient(180deg, #18191e 0%, #131418 100%);
+    border-bottom: 1px solid var(--borderLight);
+    padding: 44px 0 36px;
+}
+
+.eyebrowLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accentBlue);
+    margin-bottom: 6px;
+}
+
+.heroTitle {
+    font-size: clamp(1.6rem, 3.8vw, 2.25rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    color: var(--textPrimary);
+    margin: 0;
+}
+
+.heroSubtitle {
+    font-size: clamp(0.92rem, 1.8vw, 1.05rem);
+    color: var(--textSecondary);
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+/* ==================== BOTONES LIQUID GLASS CALIBRADOS ==================== */
+.btnApplePrimary,
+.btnAppleSecondary,
+.btnAppleDanger {
+    position: relative;
+    overflow: hidden;
+    --mouseX: 50%;
+    --mouseY: 50%;
+    font-family: inherit;
+    line-height: 1.35;
+    border-radius: var(--radiusPill);
+    backdrop-filter: blur(22px) saturate(190%);
+    -webkit-backdrop-filter: blur(22px) saturate(190%);
+    cursor: pointer;
+    transition: background 0.28s var(--easeApple),
+                border-color 0.28s var(--easeApple),
+                box-shadow 0.28s var(--easeApple),
+                color 0.25s var(--easeApple),
+                transform 0.24s var(--easeApple);
+}
+
+.btnApplePrimary::before,
+.btnAppleSecondary::before,
+.btnAppleDanger::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s var(--easeApple);
+}
+
+.btnApplePrimary::after,
+.btnAppleSecondary::after,
+.btnAppleDanger::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -135%;
+    width: 75%;
+    height: 200%;
+    background: linear-gradient(105deg,
+                transparent 25%,
+                rgba(255, 255, 255, 0.2) 50%,
+                transparent 75%);
+    transform: skewX(-18deg);
+    pointer-events: none;
+    transition: left 0.75s var(--easeApple);
+}
+
+.btnApplePrimary:hover::before,
+.btnAppleSecondary:hover::before,
+.btnAppleDanger:hover::before {
+    opacity: 1;
+}
+
+.btnApplePrimary:hover::after,
+.btnAppleSecondary:hover::after,
+.btnAppleDanger:hover::after {
+    left: 165%;
+}
+
+/* Variante Primaria (Cristal Zafiro Translúcido) */
+.btnApplePrimary {
+    background: linear-gradient(135deg, rgba(41, 151, 255, 0.28) 0%, rgba(10, 118, 224, 0.15) 100%);
+    color: #eaf5ff;
+    border: 1px solid rgba(86, 178, 255, 0.38);
+    padding: 9px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+.btnApplePrimary::before {
+    background: radial-gradient(circle 105px at var(--mouseX) var(--mouseY),
+                rgba(130, 202, 255, 0.28) 0%,
+                rgba(41, 151, 255, 0.12) 48%,
+                transparent 78%);
+}
+
+.btnApplePrimary:hover {
+    background: linear-gradient(135deg, rgba(41, 151, 255, 0.4) 0%, rgba(10, 118, 224, 0.22) 100%);
+    border-color: rgba(135, 204, 255, 0.62);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(41, 151, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.38);
+}
+
+.btnApplePrimary:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 2px 8px rgba(41, 151, 255, 0.16);
+}
+
+/* Variante Secundaria (Titanio Translúcido) */
+.btnAppleSecondary {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.11) 0%, rgba(255, 255, 255, 0.04) 100%);
+    color: var(--textPrimary);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 9px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.btnAppleSecondary::before {
+    background: radial-gradient(circle 105px at var(--mouseX) var(--mouseY),
+                rgba(255, 255, 255, 0.2) 0%,
+                rgba(41, 151, 255, 0.09) 48%,
+                transparent 78%);
+}
+
+.btnAppleSecondary:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.17) 0%, rgba(255, 255, 255, 0.07) 100%);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.32);
+}
+
+.btnAppleSecondary:active {
+    transform: translateY(0) scale(0.985);
+    box-shadow: none;
+}
+
+/* Variante Destructiva / Eliminar (Rubí Translúcido) */
+.btnAppleDanger {
+    background: linear-gradient(135deg, rgba(255, 69, 58, 0.2) 0%, rgba(255, 69, 58, 0.09) 100%);
+    color: #ff6961;
+    border: 1px solid rgba(255, 69, 58, 0.34);
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 175, 170, 0.22);
+}
+
+.btnAppleDanger::before {
+    background: radial-gradient(circle 85px at var(--mouseX) var(--mouseY),
+                rgba(255, 160, 155, 0.26) 0%,
+                rgba(255, 69, 58, 0.12) 50%,
+                transparent 78%);
+}
+
+.btnAppleDanger:hover {
+    background: linear-gradient(135deg, rgba(255, 69, 58, 0.3) 0%, rgba(255, 69, 58, 0.14) 100%);
+    border-color: rgba(255, 115, 105, 0.54);
+    color: #ff8c85;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(255, 69, 58, 0.2), inset 0 1px 0 rgba(255, 195, 190, 0.34);
+}
+
+.btnAppleDanger:active {
+    transform: translateY(0) scale(0.985);
+}
+
+/* Igualación exacta entre enlaces <a> y botones <button> compactos */
+.btnAppleSmall,
+.btnApplePrimary.btnAppleSmall,
+.btnAppleSecondary.btnAppleSmall,
+.btnAppleDanger.btnAppleSmall {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+}
+
+/* Enlaces interactivos con desplazamiento y subrayado animado */
+.appleLink {
+    position: relative;
+    color: var(--accentBlue);
+    font-size: 0.9rem;
+    font-weight: 400;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    width: fit-content;
+    padding-bottom: 2px;
+    transition: color 0.25s var(--easeApple), transform 0.25s var(--easeApple);
+}
+
+.appleLink::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background-color: var(--accentBlueHover);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.28s var(--easeApple);
+}
+
+.appleLink:hover {
+    color: var(--accentBlueHover);
+    transform: translateX(3px);
+}
+
+.appleLink:hover::after {
+    transform: scaleX(1);
+}
+
+.appleLink:active {
+    transform: translateX(1px) scale(0.98);
+}
+
+/* ==================== TARJETAS Y MÉTRICAS ==================== */
+.appleCard {
+    background-color: var(--bgSurface);
+    border-radius: var(--radiusCard);
+    border: 1px solid var(--borderLight);
+    box-shadow: var(--shadowSoft);
+    transition: box-shadow 0.3s var(--easeApple),
+                border-color 0.3s var(--easeApple),
+                transform 0.3s var(--easeApple);
+}
+
+.appleCard:hover {
+    box-shadow: var(--shadowHover);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
+}
+
+.metricNumber {
+    font-size: clamp(1.75rem, 3.2vw, 2.2rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--textPrimary);
+    line-height: 1.1;
+    word-break: break-word;
+}
+
+/* Tarjeta tipo Revisión de Pedidos (Apple Order Card) */
+.orderStyleCard {
+    background-color: var(--bgSurface);
+    border-radius: var(--radiusCard);
+    border: 1px solid var(--borderLight);
+    box-shadow: var(--shadowSoft);
+    overflow: hidden;
+    margin-bottom: 18px;
+    transition: box-shadow 0.3s var(--easeApple),
+                border-color 0.3s var(--easeApple),
+                transform 0.3s var(--easeApple);
+}
+
+.orderStyleCard:hover {
+    box-shadow: var(--shadowHover);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: translateY(-2px);
+}
+
+.orderCardTop {
+    background-color: var(--bgSubtle);
+    border-bottom: 1px solid var(--borderLight);
+    padding: 14px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.metaGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+}
+
+.metaLabel {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--textTertiary);
+    display: block;
+}
+
+.metaValue {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--textPrimary);
+    font-variant-numeric: tabular-nums;
+}
+
+.orderCardBody {
+    padding: 22px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Badges de estado calibrados para modo oscuro */
+.statusPill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: var(--radiusPill);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.statusDisponible {
+    background-color: rgba(48, 209, 88, 0.14);
+    color: #30d158;
+    border: 1px solid rgba(48, 209, 88, 0.25);
+}
+
+.statusReservado {
+    background-color: rgba(255, 159, 10, 0.15);
+    color: #ff9f0a;
+    border: 1px solid rgba(255, 159, 10, 0.25);
+}
+
+.statusVendido {
+    background-color: rgba(142, 142, 147, 0.16);
+    color: #aeaeb2;
+    border: 1px solid rgba(142, 142, 147, 0.25);
+}
+
+/* Secciones y pie de página */
+.sectionHeading {
+    font-size: clamp(1.15rem, 2.4vw, 1.35rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--textPrimary);
+}
+
+.appleFooter {
+    border-top: 1px solid var(--borderLight);
+    color: var(--textTertiary);
+    font-size: 0.8rem;
+    padding: 28px 0;
+    margin-top: 56px;
+}
+
+/* ==================== FORMULARIOS, ALERTAS Y TABLAS ==================== */
+.appleFormLabel {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--textSecondary);
+    margin-bottom: 6px;
+    display: block;
+}
+
+.appleInput,
+.appleSelect {
+    width: 100%;
+    background-color: var(--bgSubtle);
+    color: var(--textPrimary);
+    border: 1px solid var(--borderLight);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    transition: border-color 0.25s var(--easeApple), box-shadow 0.25s var(--easeApple), background-color 0.25s var(--easeApple);
+}
+
+.appleInput::placeholder {
+    color: var(--textTertiary);
+}
+
+.appleInput:focus,
+.appleSelect:focus {
+    outline: none;
+    background-color: #262830;
+    border-color: var(--accentBlue);
+    box-shadow: 0 0 0 3px rgba(41, 151, 255, 0.22);
+}
+
+.appleInput[readonly] {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.appleAlertSuccess {
+    background-color: rgba(48, 209, 88, 0.14);
+    border: 1px solid rgba(48, 209, 88, 0.3);
+    color: #30d158;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: 0.88rem;
+}
+
+.appleAlertError {
+    background-color: rgba(255, 69, 58, 0.14);
+    border: 1px solid rgba(255, 69, 58, 0.3);
+    color: #ff6961;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: 0.88rem;
+}
+
+.appleTableWrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.appleTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+}
+
+.appleTable th {
+    background-color: var(--bgSubtle);
+    color: var(--textTertiary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--borderLight);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.appleTable td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--borderLight);
+    color: var(--textPrimary);
+    vertical-align: middle;
+    font-variant-numeric: tabular-nums;
+}
+
+.appleTable tbody tr {
+    transition: background-color 0.2s var(--easeApple);
+}
+
+.appleTable tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.appleTable tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ==================== BUSCADOR PREDICTIVO SPOTLIGHT ==================== */
+.searchSelectWrapper {
+    position: relative;
+}
+
+.searchInputContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchInputContainer .appleInput {
+    padding-right: 36px;
+}
+
+.searchClearBtn {
+    position: absolute;
+    right: 10px;
+    background: rgba(255, 255, 255, 0.12);
+    color: var(--textSecondary);
+    border: none;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    font-size: 0.8rem;
+    line-height: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s var(--easeApple), color 0.2s var(--easeApple);
+}
+
+.searchClearBtn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: var(--textPrimary);
+}
+
+.searchDropdownList {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    background: rgba(34, 36, 43, 0.96);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.65);
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 6px;
+    display: none;
+}
+
+.searchDropdownList.show {
+    display: block;
+}
+
+.searchDropdownItem {
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.18s var(--easeApple);
+}
+
+.searchDropdownItem:hover,
+.searchDropdownItem.selected {
+    background-color: rgba(41, 151, 255, 0.2);
+}
+
+.searchItemTitle {
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--textPrimary);
+    display: block;
+}
+
+.searchItemMeta {
+    font-size: 0.75rem;
+    color: var(--textSecondary);
+    display: block;
+}
+
+.searchEmptyState {
+    padding: 12px;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--textTertiary);
+    display: none;
+}
+
+.appleInput.inputInvalid {
+    border-color: #ff453a;
+    box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.22);
+}
+
+/* ==================== ADAPTACIÓN TABLET Y MÓVIL (RESPONSIVE) ==================== */
+@media (max-width: 991.98px) {
+    .accountHeader {
+        padding: 32px 0 28px;
+    }
+
+    .accountHeader .btnApplePrimary,
+    .accountHeader .btnAppleSecondary {
+        margin-top: 6px;
+    }
+
+    .metaGroup {
+        gap: 18px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .liquidDesktopLinks,
+    .clientNavPills {
+        display: none !important;
+    }
+
+    .liquidGlassTrigger {
+        display: inline-flex;
+    }
+
+    .appleInput,
+    .appleSelect {
+        font-size: 16px;
+        min-height: 44px;
+    }
+
+    .searchDropdownList {
+        max-height: 190px;
+    }
+
+    .appleTable {
+        min-width: 680px;
+    }
+
+    .appleTable th,
+    .appleTable td {
+        padding: 11px 14px;
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    :root {
+        --radiusCard: 16px;
+    }
+
+    .accountHeader {
+        padding: 24px 0 22px;
+    }
+
+    .accountHeader .btnApplePrimary,
+    .accountHeader .btnAppleSecondary {
+        width: 100%;
+    }
+
+    .orderCardTop {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .metaGroup {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 14px;
+        width: 100%;
+    }
+
+    .orderCardBody {
+        padding: 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+
+    .orderCardBody > div:last-child {
+        width: 100%;
+        padding-top: 12px;
+        border-top: 1px solid var(--borderLight);
+        align-items: flex-start !important;
+    }
+
+    .orderCardBody .btnAppleSecondary,
+    .orderCardBody .btnApplePrimary,
+    .orderCardBody .btnAppleDanger {
+        min-height: 36px;
+        padding: 6px 14px;
+        font-size: 0.8rem;
+    }
+
+    .appleFooter > .container {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* ==================== IMPRESIÓN / EXPORTACIÓN PDF ==================== */
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #111111 !important;
+        padding-top: 0 !important;
+    }
+    .liquidNavbar,
+    .liquidGlassPanel,
+    .liquidBackdrop,
+    .noPrint {
+        display: none !important;
+    }
+    .appleCard,
+    .orderStyleCard {
+        box-shadow: none !important;
+        border: 1px solid #cccccc !important;
+        background: #ffffff !important;
+        color: #111111 !important;
+    }
+    .appleTable th,
+    .appleTable td,
+    .metricNumber,
+    .heroTitle,
+    .sectionHeading {
+        color: #111111 !important;
+    }
+}
+
+/* ==================== LIQUID GLASS DROPZONE (SUBIDA DE IMAGEN) ==================== */
+.liquidDropzone {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1.5px dashed rgba(255, 255, 255, 0.22);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 12px 32px rgba(0, 0, 0, 0.28);
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.liquidDropzone::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+        340px circle at var(--mouseX, 50%) var(--mouseY, 50%),
+        rgba(10, 132, 255, 0.16),
+        transparent 65%
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.liquidDropzone:hover::before,
+.liquidDropzone.isDragOver::before {
+    opacity: 1;
+}
+
+.liquidDropzone:hover {
+    border-color: rgba(10, 132, 255, 0.65);
+    background: linear-gradient(145deg, rgba(10, 132, 255, 0.09), rgba(255, 255, 255, 0.02));
+}
+
+.liquidDropzone.isDragOver {
+    border-color: var(--accentBlue, #0a84ff);
+    background: rgba(10, 132, 255, 0.14);
+    transform: translateY(-2px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 14px 36px rgba(10, 132, 255, 0.22);
+}
+
+.liquidDropIconWrap {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 0.9rem auto;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(10, 132, 255, 0.22), rgba(10, 132, 255, 0.06));
+    border: 1px solid rgba(10, 132, 255, 0.35);
+    color: var(--accentBlue, #0a84ff);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.liquidDropPreviewCard {
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.035);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32);
+}
+
+.liquidDropPreviewImg {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.liquidDropPreviewBar {
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    background: rgba(18, 20, 26, 0.72);
+}

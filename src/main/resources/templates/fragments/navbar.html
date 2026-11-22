@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="liquidNavbar(paginaActiva)">
+        <!-- Barra superior -->
+        <nav class="liquidNavbar d-flex align-items-center">
+            <div class="container d-flex justify-content-between align-items-center">
+                <a class="brandLogo" th:href="@{/admin}">
+                    <span class="brandDot"></span>
+                    <span>Remaneja</span>
+                </a>
+
+                <!-- Enlaces horizontales (Escritorio) -->
+                <div class="liquidDesktopLinks">
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'resumen'} ? 'active' : ''" th:href="@{/admin}">Resumen</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'usuarios'} ? 'active' : ''" th:href="@{/web/users}">Usuarios</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'vehiculos'} ? 'active' : ''" th:href="@{/web/vehicles}">Vehículos</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'acuerdos'} ? 'active' : ''" th:href="@{/web/purchaseagreements}">Acuerdos</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'informes'} ? 'active' : ''" th:href="@{/web/reports}">Informes</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'negocio'} ? 'active' : ''" th:href="@{/web/business}">Negocio</a>
+                </div>
+
+                <!-- Botón píldora Liquid Glass (Móvil) -->
+                <button type="button" class="liquidGlassTrigger" id="liquidMenuBtn" aria-expanded="false" aria-label="Abrir navegación">
+                    <span>Menú</span>
+                    <span class="liquidMenuIcon">
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Fondo atenuado al desplegar -->
+        <div class="liquidBackdrop" id="liquidBackdrop"></div>
+
+        <!-- Panel flotante Liquid Glass 2x3 -->
+        <div class="liquidGlassPanel" id="liquidMenuPanel">
+            <div class="liquidPanelHeader">
+                <span class="liquidPanelTitle">Navegación Remaneja</span>
+                <span class="liquidPanelTitle" style="color: var(--accentBlue);" th:text="${#strings.capitalize(paginaActiva)}">Resumen</span>
+            </div>
+
+            <div class="liquidMenuGrid">
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'resumen'} ? 'active' : ''" th:href="@{/admin}">
+                    <span class="liquidItemName">Resumen</span>
+                    <span class="liquidItemDesc">Panel general</span>
+                </a>
+
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'usuarios'} ? 'active' : ''" th:href="@{/web/users}">
+                    <span class="liquidItemName">Usuarios</span>
+                    <span class="liquidItemDesc">Cuentas y dueños</span>
+                </a>
+
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'vehiculos'} ? 'active' : ''" th:href="@{/web/vehicles}">
+                    <span class="liquidItemName">Vehículos</span>
+                    <span class="liquidItemDesc">Catálogo e inventario</span>
+                </a>
+
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'acuerdos'} ? 'active' : ''" th:href="@{/web/purchaseagreements}">
+                    <span class="liquidItemName">Acuerdos</span>
+                    <span class="liquidItemDesc">Contratos CRUD</span>
+                </a>
+
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'informes'} ? 'active' : ''" th:href="@{/web/reports}">
+                    <span class="liquidItemName">Informes</span>
+                    <span class="liquidItemDesc">Filtros y métricas</span>
+                </a>
+
+                <a class="liquidGridItem" th:classappend="${paginaActiva == 'negocio'} ? 'active' : ''" th:href="@{/web/business}">
+                    <span class="liquidItemName">Negocio</span>
+                    <span class="liquidItemDesc">Sala de cierre</span>
+                </a>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const liquidMenuBtn = document.getElementById("liquidMenuBtn");
+                const liquidMenuPanel = document.getElementById("liquidMenuPanel");
+                const liquidBackdrop = document.getElementById("liquidBackdrop");
+
+                const selectorCristal = [
+                    ".btnApplePrimary",
+                    ".btnAppleSecondary",
+                    ".btnAppleDanger",
+                    ".liquidGridItem",
+                    ".liquidDesktopLinks .appleNavLink",
+                    ".liquidGlassTrigger",
+                    ".liquidGlassPanel"
+                ].join(", ");
+
+                document.addEventListener("pointermove", (evento) => {
+                    const elementoCristal = evento.target.closest(selectorCristal);
+                    if (!elementoCristal) return;
+
+                    const rect = elementoCristal.getBoundingClientRect();
+                    const posX = evento.clientX - rect.left;
+                    const posY = evento.clientY - rect.top;
+                    elementoCristal.style.setProperty("--mouseX", `${posX}px`);
+                    elementoCristal.style.setProperty("--mouseY", `${posY}px`);
+                });
+
+                if (!liquidMenuBtn || !liquidMenuPanel || !liquidBackdrop) return;
+
+                function closeLiquidMenu() {
+                    liquidMenuBtn.classList.remove("isOpen");
+                    liquidMenuBtn.setAttribute("aria-expanded", "false");
+                    liquidMenuPanel.classList.remove("open");
+                    liquidBackdrop.classList.remove("open");
+                }
+
+                function toggleLiquidMenu() {
+                    const estaAbierto = liquidMenuPanel.classList.contains("open");
+                    if (estaAbierto) {
+                        closeLiquidMenu();
+                    } else {
+                        liquidMenuBtn.classList.add("isOpen");
+                        liquidMenuBtn.setAttribute("aria-expanded", "true");
+                        liquidMenuPanel.classList.add("open");
+                        liquidBackdrop.classList.add("open");
+                    }
+                }
+
+                liquidMenuBtn.addEventListener("click", toggleLiquidMenu);
+                liquidBackdrop.addEventListener("click", closeLiquidMenu);
+
+                window.addEventListener("resize", () => {
+                    if (window.innerWidth >= 768) {
+                        closeLiquidMenu();
+                    }
+                });
+            });
+        </script>
+    </div>
+
+</body>
+</html>

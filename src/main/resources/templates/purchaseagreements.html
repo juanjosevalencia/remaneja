@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaneja — Acuerdos de Compra</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/remaneja.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/navbar :: liquidNavbar('acuerdos')}"></div>
+
+    <header class="accountHeader">
+        <div class="container">
+            <p class="eyebrowLabel">Contratos y Transacciones</p>
+            <h1 class="heroTitle">Acuerdos de Compraventa</h1>
+            <p class="heroSubtitle">Formaliza negociaciones vinculando vehículo, vendedor, comprador y monto acordado.</p>
+        </div>
+    </header>
+
+    <main class="container my-5">
+
+        <div class="appleAlertSuccess mb-4" th:if="${mensajeExito}" th:text="${mensajeExito}"></div>
+        <div class="appleAlertError mb-4" th:if="${mensajeError}" th:text="${mensajeError}"></div>
+        <div class="appleAlertError mb-4 d-none" id="alertaValidacionBuscador">
+            Debes seleccionar un vehículo, un vendedor y un comprador válidos desde las sugerencias de búsqueda.
+        </div>
+
+        <div class="row g-4">
+            <!-- Formulario de Registro / Edición con Buscadores Predictivos -->
+            <div class="col-lg-4">
+                <div class="appleCard p-4">
+                    <h2 class="sectionHeading mb-1" th:text="${modoEdicion} ? 'Editar Acuerdo' : 'Nuevo Acuerdo'">Nuevo Acuerdo</h2>
+                    <p class="text-secondary small mb-4">Escribe el ID, nombre o placa para filtrar y seleccionar.</p>
+
+                    <form id="formAcuerdo" th:action="@{/web/purchaseagreements/save}" th:object="${acuerdoForm}" method="post">
+                        <input type="hidden" name="modoEdicion" th:value="${modoEdicion}">
+
+                        <div class="mb-3" th:if="${modoEdicion}">
+                            <label class="appleFormLabel" for="id">ID Acuerdo (Automático)</label>
+                            <input type="number" id="id" th:field="*{id}" class="appleInput" readonly>
+                        </div>
+
+                        <!-- Buscador de Vehículo -->
+                        <div class="mb-3 searchSelectWrapper" id="wrapperVehicleSearch">
+                            <label class="appleFormLabel" for="vehicleSearchInput">Vehículo Objeto del Acuerdo</label>
+                            <input type="hidden" id="vehicleId" th:field="*{vehicleId}">
+                            <div class="searchInputContainer">
+                                <input type="text"
+                                       id="vehicleSearchInput"
+                                       class="appleInput"
+                                       placeholder="Buscar por ID, modelo o placa..."
+                                       autocomplete="off">
+                                <button type="button" class="searchClearBtn" id="clearVehicleBtn" title="Limpiar selección">×</button>
+                            </div>
+                            <div class="searchDropdownList" id="vehicleDropdownList">
+                                <div class="searchDropdownItem"
+                                     th:each="vehiculo : ${listaVehiculos}"
+                                     th:attr="data-id=${vehiculo.carId},
+                                              data-label=${'#' + vehiculo.carId + ' — ' + vehiculo.model + ' (' + vehiculo.plate + ')'},
+                                              data-search=${vehiculo.carId + ' ' + vehiculo.model + ' ' + vehiculo.plate + ' ' + (vehiculo.ownerName != null ? vehiculo.ownerName : '')},
+                                              data-owner-id=${vehiculo.ownerId},
+                                              data-price=${vehiculo.price}">
+                                    <span class="searchItemTitle"
+                                          th:text="'#' + ${vehiculo.carId} + ' — ' + ${vehiculo.model} + ' (' + ${vehiculo.plate} + ')'">#10 — Mazda 3 (KLM456)</span>
+                                    <span class="searchItemMeta"
+                                          th:text="'Dueño: ' + ${vehiculo.ownerName} + ' • Estado: ' + ${vehiculo.salesStatus}">Dueño • Estado</span>
+                                </div>
+                                <div class="searchEmptyState">No se encontraron vehículos coincidentes.</div>
+                            </div>
+                        </div>
+
+                        <!-- Buscador de Vendedor -->
+                        <div class="mb-3 searchSelectWrapper" id="wrapperSellerSearch">
+                            <label class="appleFormLabel" for="sellerSearchInput">Vendedor</label>
+                            <input type="hidden" id="sellerId" th:field="*{sellerId}">
+                            <div class="searchInputContainer">
+                                <input type="text"
+                                       id="sellerSearchInput"
+                                       class="appleInput"
+                                       placeholder="Buscar vendedor por ID o nombre..."
+                                       autocomplete="off">
+                                <button type="button" class="searchClearBtn" id="clearSellerBtn" title="Limpiar selección">×</button>
+                            </div>
+                            <div class="searchDropdownList" id="sellerDropdownList">
+                                <div class="searchDropdownItem"
+                                     th:each="usuario : ${listaUsuarios}"
+                                     th:attr="data-id=${usuario.id},
+                                              data-label=${usuario.id + ' — ' + usuario.name},
+                                              data-search=${usuario.id + ' ' + usuario.name + ' ' + (usuario.email != null ? usuario.email : '')}">
+                                    <span class="searchItemTitle" th:text="${usuario.id} + ' — ' + ${usuario.name}">1001234567 — Juan</span>
+                                    <span class="searchItemMeta" th:text="${usuario.email}">correo@ejemplo.com</span>
+                                </div>
+                                <div class="searchEmptyState">No se encontraron usuarios coincidentes.</div>
+                            </div>
+                        </div>
+
+                        <!-- Buscador de Comprador -->
+                        <div class="mb-3 searchSelectWrapper" id="wrapperBuyerSearch">
+                            <label class="appleFormLabel" for="buyerSearchInput">Comprador</label>
+                            <input type="hidden" id="buyerId" th:field="*{buyerId}">
+                            <div class="searchInputContainer">
+                                <input type="text"
+                                       id="buyerSearchInput"
+                                       class="appleInput"
+                                       placeholder="Buscar comprador por ID o nombre..."
+                                       autocomplete="off">
+                                <button type="button" class="searchClearBtn" id="clearBuyerBtn" title="Limpiar selección">×</button>
+                            </div>
+                            <div class="searchDropdownList" id="buyerDropdownList">
+                                <div class="searchDropdownItem"
+                                     th:each="usuario : ${listaUsuarios}"
+                                     th:attr="data-id=${usuario.id},
+                                              data-label=${usuario.id + ' — ' + usuario.name},
+                                              data-search=${usuario.id + ' ' + usuario.name + ' ' + (usuario.email != null ? usuario.email : '')}">
+                                    <span class="searchItemTitle" th:text="${usuario.id} + ' — ' + ${usuario.name}">1009876543 — Carlos</span>
+                                    <span class="searchItemMeta" th:text="${usuario.email}">correo@ejemplo.com</span>
+                                </div>
+                                <div class="searchEmptyState">No se encontraron usuarios coincidentes.</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 mb-4">
+                            <div class="col-7">
+                                <label class="appleFormLabel" for="agreedAmount">Monto Acordado ($)</label>
+                                <input type="number" step="0.01" id="agreedAmount" th:field="*{agreedAmount}" class="appleInput" placeholder="75000000" required>
+                            </div>
+                            <div class="col-5">
+                                <label class="appleFormLabel" for="agreementStatus">Estado</label>
+                                <select id="agreementStatus" th:field="*{agreementStatus}" class="appleSelect">
+                                    <option value="PENDIENTE">PENDIENTE</option>
+                                    <option value="EN_PROCESO">EN_PROCESO</option>
+                                    <option value="FINALIZADO">FINALIZADO</option>
+                                    <option value="CANCELADO">CANCELADO</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <button type="submit" class="btnApplePrimary justify-content-center"
+                                    th:text="${modoEdicion} ? 'Guardar Cambios' : 'Registrar Acuerdo'">Registrar Acuerdo</button>
+                            <a th:if="${modoEdicion}" th:href="@{/web/purchaseagreements}" class="btnAppleSecondary justify-content-center">Cancelar edición</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Listado de Acuerdos -->
+            <div class="col-lg-8">
+                <div class="d-flex justify-content-between align-items-baseline mb-3">
+                    <h2 class="sectionHeading mb-0">Acuerdos Registrados</h2>
+                    <span class="text-secondary small" th:text="${#lists.size(listaAcuerdos)} + ' acuerdos'">0 acuerdos</span>
+                </div>
+
+                <div class="appleCard p-5 text-center" th:if="${#lists.isEmpty(listaAcuerdos)}">
+                    <h5 class="fw-semibold mb-2">Sin acuerdos registrados</h5>
+                    <p class="text-secondary small mb-0">Crea un acuerdo buscando un vehículo y dos usuarios distintos.</p>
+                </div>
+
+                <div th:unless="${#lists.isEmpty(listaAcuerdos)}">
+                    <div class="orderStyleCard" th:each="acuerdo : ${listaAcuerdos}">
+                        <div class="orderCardTop">
+                            <div class="metaGroup">
+                                <div>
+                                    <span class="metaLabel">Acuerdo ID</span>
+                                    <span class="metaValue" th:text="'#' + ${acuerdo.id}">#1</span>
+                                </div>
+                                <div>
+                                    <span class="metaLabel">Vehículo ID</span>
+                                    <span class="metaValue" th:text="'#' + ${acuerdo.vehicleId}">#5001</span>
+                                </div>
+                                <div>
+                                    <span class="metaLabel">Vendedor ID</span>
+                                    <span class="metaValue" th:text="${acuerdo.sellerId}">1001234567</span>
+                                </div>
+                                <div>
+                                    <span class="metaLabel">Comprador ID</span>
+                                    <span class="metaValue" th:text="${acuerdo.buyerId}">1009876543</span>
+                                </div>
+                            </div>
+
+                            <span class="statusPill"
+                                  th:classappend="${acuerdo.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${acuerdo.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
+                                  th:text="${acuerdo.agreementStatus}">PENDIENTE</span>
+                        </div>
+
+                        <div class="orderCardBody">
+                            <div>
+                                <h5 class="fw-semibold mb-1" th:text="'Contrato #' + ${acuerdo.id} + ' — Vehículo #' + ${acuerdo.vehicleId}">Contrato #1</h5>
+                                <p class="text-secondary small mb-0"
+                                   th:text="${acuerdo.agreementDate != null ? 'Fecha: ' + #strings.replace(acuerdo.agreementDate.toString().substring(0, 16), 'T', ' ') : 'Fecha pendiente'}">Fecha</p>
+                            </div>
+
+                            <div class="d-flex flex-column align-items-md-end gap-2">
+                                <span class="fs-5 fw-semibold"
+                                      style="font-variant-numeric: tabular-nums;"
+                                      th:text="${acuerdo.agreedAmount != null ? '$' + #numbers.formatDecimal(acuerdo.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a th:href="@{/web/purchaseagreements/edit/{agreementId}(agreementId=${acuerdo.id})}" class="btnAppleSecondary btnAppleSmall">Editar</a>
+                                    <form th:action="@{/web/purchaseagreements/delete/{agreementId}(agreementId=${acuerdo.id})}" method="post"
+                                          onsubmit="return confirm('¿Deseas eliminar este acuerdo de compra?');">
+                                        <button type="submit" class="btnAppleDanger">Eliminar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="appleFooter">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>Remaneja — Módulo de Acuerdos</span>
+            <span>Spring Boot • Thymeleaf • MySQL</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function inicializarBuscadorSelect(config) {
+            const wrapper = document.getElementById(config.wrapperId);
+            const inputVisible = document.getElementById(config.inputVisibleId);
+            const inputOculto = document.getElementById(config.inputOcultoId);
+            const dropdown = document.getElementById(config.dropdownId);
+            const clearBtn = document.getElementById(config.clearBtnId);
+            const items = Array.from(dropdown.querySelectorAll(".searchDropdownItem"));
+            const emptyState = dropdown.querySelector(".searchEmptyState");
+
+            function actualizarBotonLimpiar() {
+                clearBtn.style.display = inputVisible.value.trim().length > 0 ? "inline-flex" : "none";
+            }
+
+            function filtrarOpciones(textoConsulta) {
+                const consulta = textoConsulta.trim().toLowerCase();
+                let coincidencias = 0;
+
+                items.forEach(item => {
+                    const textoIndexado = (item.dataset.search || "").toLowerCase();
+                    const coincide = consulta === "" || textoIndexado.includes(consulta);
+                    item.style.display = coincide ? "block" : "none";
+                    if (coincide) coincidencias++;
+                });
+
+                if (emptyState) {
+                    emptyState.style.display = coincidencias === 0 ? "block" : "none";
+                }
+            }
+
+            function seleccionarPorId(idValor, dispararCallback) {
+                if (!idValor) return;
+                const itemCoincidente = items.find(item => item.dataset.id === String(idValor));
+                if (itemCoincidente) {
+                    inputOculto.value = itemCoincidente.dataset.id;
+                    inputVisible.value = itemCoincidente.dataset.label;
+                    inputVisible.classList.remove("inputInvalid");
+                    items.forEach(el => el.classList.remove("selected"));
+                    itemCoincidente.classList.add("selected");
+                    actualizarBotonLimpiar();
+                    if (dispararCallback && typeof config.alSeleccionar === "function") {
+                        config.alSeleccionar(itemCoincidente);
+                    }
+                }
+            }
+
+            inputVisible.addEventListener("focus", () => {
+                filtrarOpciones(inputVisible.value);
+                dropdown.classList.add("show");
+            });
+
+            inputVisible.addEventListener("input", () => {
+                inputOculto.value = "";
+                items.forEach(el => el.classList.remove("selected"));
+                filtrarOpciones(inputVisible.value);
+                dropdown.classList.add("show");
+                actualizarBotonLimpiar();
+            });
+
+            items.forEach(item => {
+                item.addEventListener("click", () => {
+                    seleccionarPorId(item.dataset.id, true);
+                    dropdown.classList.remove("show");
+                });
+            });
+
+            clearBtn.addEventListener("click", () => {
+                inputVisible.value = "";
+                inputOculto.value = "";
+                items.forEach(el => el.classList.remove("selected"));
+                actualizarBotonLimpiar();
+                filtrarOpciones("");
+                inputVisible.focus();
+            });
+
+            document.addEventListener("click", (evento) => {
+                if (!wrapper.contains(evento.target)) {
+                    dropdown.classList.remove("show");
+                }
+            });
+
+            // Si viene precargado desde modo edición, mostrar la etiqueta legible
+            if (inputOculto.value) {
+                seleccionarPorId(inputOculto.value, false);
+            }
+
+            return { seleccionarPorId };
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const buscadorVendedor = inicializarBuscadorSelect({
+                wrapperId: "wrapperSellerSearch",
+                inputVisibleId: "sellerSearchInput",
+                inputOcultoId: "sellerId",
+                dropdownId: "sellerDropdownList",
+                clearBtnId: "clearSellerBtn"
+            });
+
+            const buscadorComprador = inicializarBuscadorSelect({
+                wrapperId: "wrapperBuyerSearch",
+                inputVisibleId: "buyerSearchInput",
+                inputOcultoId: "buyerId",
+                dropdownId: "buyerDropdownList",
+                clearBtnId: "clearBuyerBtn"
+            });
+
+            const buscadorVehiculo = inicializarBuscadorSelect({
+                wrapperId: "wrapperVehicleSearch",
+                inputVisibleId: "vehicleSearchInput",
+                inputOcultoId: "vehicleId",
+                dropdownId: "vehicleDropdownList",
+                clearBtnId: "clearVehicleBtn",
+                alSeleccionar: (itemVehiculo) => {
+                    // Autocompleta el vendedor con el propietario actual del auto
+                    const ownerId = itemVehiculo.dataset.ownerId;
+                    if (ownerId) {
+                        buscadorVendedor.seleccionarPorId(ownerId, false);
+                    }
+                    // Sugiere el precio de lista si el monto está vacío
+                    const campoMonto = document.getElementById("agreedAmount");
+                    if (campoMonto && !campoMonto.value && itemVehiculo.dataset.price) {
+                        campoMonto.value = itemVehiculo.dataset.price;
+                    }
+                }
+            });
+
+            const formAcuerdo = document.getElementById("formAcuerdo");
+            const alertaValidacion = document.getElementById("alertaValidacionBuscador");
+
+            formAcuerdo.addEventListener("submit", (evento) => {
+                const camposRequeridos = [
+                    { oculto: "vehicleId", visible: "vehicleSearchInput" },
+                    { oculto: "sellerId", visible: "sellerSearchInput" },
+                    { oculto: "buyerId", visible: "buyerSearchInput" }
+                ];
+
+                let primerInvalido = null;
+                camposRequeridos.forEach(par => {
+                    const elOculto = document.getElementById(par.oculto);
+                    const elVisible = document.getElementById(par.visible);
+                    if (!elOculto.value) {
+                        elVisible.classList.add("inputInvalid");
+                        if (!primerInvalido) primerInvalido = elVisible;
+                    } else {
+                        elVisible.classList.remove("inputInvalid");
+                    }
+                });
+
+                if (primerInvalido) {
+                    evento.preventDefault();
+                    alertaValidacion.classList.remove("d-none");
+                    primerInvalido.focus();
+                } else {
+                    alertaValidacion.classList.add("d-none");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

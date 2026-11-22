@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remaneja — Compra y Vende Vehículos Usados</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/remaneja.css}">
+    <style>
+        /* ==================== IMÁGENES PROPORCIONALES (3 COLUMNAS EN PC) ==================== */
+        .vehicleCatalogImg {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            display: block;
+            border-radius: 14px;
+            border: 1px solid var(--borderLight);
+        }
+
+        .vehicleProfileThumb {
+            width: 128px;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            flex-shrink: 0;
+            border-radius: 12px;
+            border: 1px solid var(--borderLight);
+        }
+
+        .vehicleModalImg {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            display: block;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        /* ==================== CUADRO LIQUID GLASS PARA CARGA DE IMAGEN ==================== */
+        .liquidUploadShell {
+            padding: 1rem;
+            border-radius: 22px;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015));
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 14px 34px rgba(0, 0, 0, 0.34);
+        }
+
+        .liquidDropzone {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            min-height: 220px;
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            cursor: pointer;
+            background: rgba(14, 16, 22, 0.58);
+            border: 1.5px dashed rgba(255, 255, 255, 0.24);
+            transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+        }
+
+        .liquidDropzone::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                360px circle at var(--mouseX, 50%) var(--mouseY, 50%),
+                rgba(10, 132, 255, 0.18),
+                transparent 65%
+            );
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+
+        .liquidDropzone:hover::before,
+        .liquidDropzone.isDragOver::before {
+            opacity: 1;
+        }
+
+        .liquidDropzone:hover {
+            border-color: rgba(10, 132, 255, 0.72);
+            background: rgba(18, 24, 36, 0.72);
+        }
+
+        .liquidDropzone.isDragOver {
+            border-color: #0a84ff;
+            background: rgba(10, 132, 255, 0.14);
+            transform: translateY(-2px);
+            box-shadow: inset 0 0 0 1px rgba(10, 132, 255, 0.35), 0 12px 30px rgba(10, 132, 255, 0.2);
+        }
+
+        .liquidDropIconWrap {
+            width: 58px;
+            height: 58px;
+            margin-bottom: 1rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(10, 132, 255, 0.24), rgba(10, 132, 255, 0.06));
+            border: 1px solid rgba(10, 132, 255, 0.38);
+            color: #4da3ff;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 20px rgba(10, 132, 255, 0.15);
+        }
+
+        .liquidDropPreviewCard {
+            border-radius: 16px;
+            overflow: hidden;
+            background: rgba(14, 16, 22, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .liquidDropPreviewImg {
+            width: 100%;
+            aspect-ratio: 16 / 10;
+            object-fit: cover;
+            display: block;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .liquidDropPreviewBar {
+            padding: 0.85rem 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            background: rgba(20, 22, 30, 0.85);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra Superior Liquid Glass Fija con Opciones del Cliente -->
+    <nav class="liquidNavbar d-flex align-items-center">
+        <div class="container d-flex justify-content-between align-items-center gap-2">
+            <a class="brandLogo" th:href="@{/portal}">
+                <span class="brandDot"></span>
+                <span>Remaneja</span>
+            </a>
+
+            <!-- Opciones del cliente en escritorio (cuando hay sesión activa) -->
+            <div class="clientNavPills" th:if="${clienteLogueado != null}">
+                <a class="appleNavLink"
+                   th:classappend="${tabActiva == 'catalogo'} ? 'active' : ''"
+                   th:href="@{/portal(tab='catalogo')}">Catálogo</a>
+                <a class="appleNavLink"
+                   th:classappend="${tabActiva == 'publicar'} ? 'active' : ''"
+                   th:href="@{/portal(tab='publicar')}">Publicar Auto</a>
+                <a class="appleNavLink"
+                   th:classappend="${tabActiva == 'procesos'} ? 'active' : ''"
+                   th:href="@{/portal(tab='procesos')}">Mis Procesos</a>
+                <a class="appleNavLink"
+                   th:classappend="${tabActiva == 'perfil'} ? 'active' : ''"
+                   th:href="@{/portal(tab='perfil')}">Perfil</a>
+            </div>
+
+            <!-- Acciones de sesión en escritorio -->
+            <div class="d-none d-md-flex align-items-center gap-2" th:if="${clienteLogueado == null}">
+                <a class="appleNavLink active" th:href="@{/portal}">Catálogo</a>
+                <a class="btnAppleSecondary btnAppleSmall" th:href="@{/login}">Iniciar sesión</a>
+                <a class="btnApplePrimary btnAppleSmall" th:href="@{/register}">Registrarse</a>
+            </div>
+
+            <div class="d-none d-md-flex align-items-center gap-2" th:if="${clienteLogueado != null}">
+                <span class="text-secondary small" th:text="${clienteLogueado.name}">Cliente</span>
+                <a class="btnAppleSecondary btnAppleSmall" th:href="@{/logout}">Salir</a>
+            </div>
+
+            <!-- Disparador Liquid Glass en móvil -->
+            <button type="button" class="liquidGlassTrigger" id="liquidMenuBtn" aria-expanded="false" aria-label="Abrir navegación">
+                <span>Menú</span>
+                <span class="liquidMenuIcon">
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Fondo atenuado y Panel Liquid Glass Móvil -->
+    <div class="liquidBackdrop" id="liquidBackdrop"></div>
+    <div class="liquidGlassPanel" id="liquidMenuPanel">
+        <div class="liquidPanelHeader">
+            <span class="liquidPanelTitle">Portal Cliente</span>
+            <span class="liquidPanelTitle" style="color: var(--accentBlue);"
+                  th:text="${clienteLogueado != null ? clienteLogueado.name : 'Invitado'}">Invitado</span>
+        </div>
+
+        <div class="liquidMenuGrid" th:if="${clienteLogueado != null}">
+            <a class="liquidGridItem" th:classappend="${tabActiva == 'catalogo'} ? 'active' : ''" th:href="@{/portal(tab='catalogo')}">
+                <span class="liquidItemName">Catálogo</span>
+                <span class="liquidItemDesc">Ver y ofertar autos</span>
+            </a>
+            <a class="liquidGridItem" th:classappend="${tabActiva == 'publicar'} ? 'active' : ''" th:href="@{/portal(tab='publicar')}">
+                <span class="liquidItemName">Publicar Auto</span>
+                <span class="liquidItemDesc">Poner en venta</span>
+            </a>
+            <a class="liquidGridItem" th:classappend="${tabActiva == 'procesos'} ? 'active' : ''" th:href="@{/portal(tab='procesos')}">
+                <span class="liquidItemName">Mis Procesos</span>
+                <span class="liquidItemDesc">Compras y ventas</span>
+            </a>
+            <a class="liquidGridItem" th:classappend="${tabActiva == 'perfil'} ? 'active' : ''" th:href="@{/portal(tab='perfil')}">
+                <span class="liquidItemName">Perfil</span>
+                <span class="liquidItemDesc">Mis autos publicados</span>
+            </a>
+            <a class="liquidGridItem" th:href="@{/logout}">
+                <span class="liquidItemName">Cerrar sesión</span>
+                <span class="liquidItemDesc">Salir de tu cuenta</span>
+            </a>
+        </div>
+
+        <div class="liquidMenuGrid" th:if="${clienteLogueado == null}">
+            <a class="liquidGridItem active" th:href="@{/portal}">
+                <span class="liquidItemName">Catálogo</span>
+                <span class="liquidItemDesc">Autos disponibles</span>
+            </a>
+            <a class="liquidGridItem" th:href="@{/login}">
+                <span class="liquidItemName">Iniciar sesión</span>
+                <span class="liquidItemDesc">Entrar a tu cuenta</span>
+            </a>
+            <a class="liquidGridItem" th:href="@{/register}">
+                <span class="liquidItemName">Registrarse</span>
+                <span class="liquidItemDesc">Crear cuenta nueva</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero Principal -->
+    <header class="accountHeader">
+        <div class="container">
+            <div class="row align-items-end g-3">
+                <div class="col-lg-8">
+                    <p class="eyebrowLabel">Mercado Directo de Vehículos</p>
+                    <h1 class="heroTitle">Encuentra tu próximo auto o publica el tuyo</h1>
+                    <p class="heroSubtitle">Explora unidades verificadas disponibles, envía una oferta directa o gestiona tus negociaciones en curso.</p>
+                </div>
+                <div class="col-lg-4 d-flex flex-wrap justify-content-lg-end gap-2" th:if="${clienteLogueado == null}">
+                    <a th:href="@{/register}" class="btnApplePrimary">Crear cuenta gratis</a>
+                    <a th:href="@{/login}" class="btnAppleSecondary">Ya tengo cuenta</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container my-5">
+
+        <div class="appleAlertSuccess mb-4" th:if="${mensajeExito}" th:text="${mensajeExito}"></div>
+        <div class="appleAlertError mb-4" th:if="${mensajeError}" th:text="${mensajeError}"></div>
+
+        <!-- ==================== 1. CATÁLOGO Y OFERTA DE COMPRA ==================== -->
+        <section th:if="${tabActiva == 'catalogo' || clienteLogueado == null}">
+            <div class="appleCard p-3 p-md-4 mb-4">
+                <form th:action="@{/portal}" method="get" class="row g-2 align-items-center">
+                    <input type="hidden" name="tab" value="catalogo">
+                    <div class="col-md-9">
+                        <input type="text" name="keyword" th:value="${keyword}" class="appleInput"
+                               placeholder="Buscar vehículo disponible por modelo, placa o tipo (Ej. Mazda, SUV, KLM456)...">
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btnApplePrimary w-100 justify-content-center">Buscar</button>
+                        <a th:if="${keyword != null && !keyword.isBlank()}" th:href="@{/portal(tab='catalogo')}" class="btnAppleSecondary">Limpiar</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-baseline mb-3">
+                <h2 class="sectionHeading mb-0">Vehículos Disponibles en Catálogo</h2>
+                <span class="text-secondary small" th:text="${#lists.size(catalogoDisponible)} + ' disponibles'">0 disponibles</span>
+            </div>
+
+            <div class="appleCard p-5 text-center" th:if="${#lists.isEmpty(catalogoDisponible)}">
+                <h5 class="fw-semibold mb-2">No hay vehículos disponibles en este momento</h5>
+                <p class="text-secondary small mb-0">Vuelve pronto o publica tu propio vehículo desde tu cuenta.</p>
+            </div>
+
+            <div class="row g-3 g-xl-4" th:unless="${#lists.isEmpty(catalogoDisponible)}">
+                <div class="col-md-6 col-lg-4" th:each="auto : ${catalogoDisponible}">
+                    <div class="appleCard p-3 p-xl-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <img th:if="${auto.imageType != null && !auto.imageType.isBlank()}"
+                                 th:src="@{/portal/vehicle/{id}/image(id=${auto.carId})}"
+                                 th:alt="${auto.model}"
+                                 class="vehicleCatalogImg mb-3">
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="metaValue text-secondary" th:text="${auto.plate} + ' • ' + ${auto.releaseYear}">KLM456 • 2021</span>
+                                <span class="statusPill statusDisponible">DISPONIBLE</span>
+                            </div>
+
+                            <h5 class="fw-semibold mb-1" th:text="${auto.model}">Mazda 3 Touring</h5>
+                            <p class="text-secondary small mb-3">
+                                <span th:text="${auto.type}">Sedan</span> •
+                                Color <span th:text="${auto.color}">Gris</span> •
+                                <span th:text="${auto.kms != null ? #numbers.formatInteger(auto.kms, 1, 'POINT') + ' km' : '0 km'}">42.000 km</span>
+                            </p>
+
+                            <div class="p-3 rounded-3 mb-3" style="background-color: var(--bgSubtle); border: 1px solid var(--borderLight);">
+                                <span class="metaLabel">Precio Publicado</span>
+                                <div class="fs-4 fw-semibold"
+                                     style="font-variant-numeric: tabular-nums;"
+                                     th:text="${auto.price != null ? '$' + #numbers.formatDecimal(auto.price, 1, 'POINT', 0, 'COMMA') : '$0'}">$78.500.000</div>
+                                <span class="text-secondary small d-block mt-1"
+                                      th:text="'Propietario ID #' + ${auto.ownerId}">Propietario</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="button"
+                                    th:if="${clienteLogueado != null}"
+                                    class="btnApplePrimary w-100 justify-content-center btnAbrirOferta"
+                                    th:attr="data-car-id=${auto.carId},
+                                             data-model=${auto.model},
+                                             data-plate=${auto.plate},
+                                             data-owner=${'ID #' + auto.ownerId},
+                                             data-price=${auto.price},
+                                             data-image-url=${(auto.imageType != null && !auto.imageType.isBlank()) ? '/portal/vehicle/' + auto.carId + '/image' : ''}">
+                                Hacer Oferta de Compra
+                            </button>
+
+                            <a th:if="${clienteLogueado == null}"
+                               th:href="@{/login}"
+                               class="btnAppleSecondary w-100 justify-content-center">
+                                Inicia sesión para ofertar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 2. PUBLICAR UN AUTO ==================== -->
+        <section th:if="${clienteLogueado != null && tabActiva == 'publicar'}">
+            <div class="row justify-content-center">
+                <div class="col-lg-7">
+                    <div class="appleCard p-4 p-md-5">
+                        <p class="eyebrowLabel">Vender Vehículo</p>
+                        <h2 class="sectionHeading mb-1">Publicar mi Auto en Remaneja</h2>
+                        <p class="text-secondary small mb-4">
+                            Se publicará a nombre de <strong class="text-white" th:text="${clienteLogueado.name}">Cliente</strong> (ID <span th:text="${clienteLogueado.id}">123</span>).
+                        </p>
+
+                        <form th:action="@{/portal/publish}" th:object="${vehiculoNuevo}" method="post" enctype="multipart/form-data">
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="appleFormLabel" for="carId">Código Único del Vehículo</label>
+                                    <input type="number" id="carId" th:field="*{carId}" class="appleInput" placeholder="Ej. 5010" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="appleFormLabel" for="plate">Placa</label>
+                                    <input type="text" id="plate" th:field="*{plate}" class="appleInput" placeholder="Ej. ABC123" maxlength="20" required>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="appleFormLabel" for="model">Marca y Modelo</label>
+                                <input type="text" id="model" th:field="*{model}" class="appleInput" placeholder="Ej. Toyota Corolla Cross XEi" maxlength="100" required>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="appleFormLabel" for="type">Tipo de Carrocería</label>
+                                    <input type="text" id="type" th:field="*{type}" class="appleInput" placeholder="SUV, Sedan, Hatchback..." maxlength="50" required>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="appleFormLabel" for="color">Color</label>
+                                    <input type="text" id="color" th:field="*{color}" class="appleInput" placeholder="Blanco Perlado" maxlength="50" required>
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-sm-4">
+                                    <label class="appleFormLabel" for="releaseYear">Año</label>
+                                    <input type="number" id="releaseYear" th:field="*{releaseYear}" class="appleInput" placeholder="2022" min="1950" max="2030" required>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="appleFormLabel" for="kms">Kilometraje</label>
+                                    <input type="number" id="kms" th:field="*{kms}" class="appleInput" placeholder="28000" min="0" required>
+                                </div>
+                                <div class="col-sm-4">
+                                    <label class="appleFormLabel" for="price">Precio Pedido ($)</label>
+                                    <input type="number" step="0.01" id="price" th:field="*{price}" class="appleInput" placeholder="95000000" required>
+                                </div>
+                            </div>
+
+                            <!-- Cuadro Liquid Glass con Recuadro Punteado Interior para la Foto -->
+                            <div class="mb-4">
+                                <label class="appleFormLabel mb-2 d-block" for="imagenFile">Foto del Vehículo (opcional • máx. 10 MB)</label>
+                                <input type="file" id="imagenFile" name="imagenFile" accept="image/*" class="d-none">
+
+                                <div class="liquidUploadShell">
+                                    <!-- Zona punteada de carga -->
+                                    <div id="dropzoneVehiculo" class="liquidDropzone" role="button" tabindex="0" aria-label="Seleccionar o arrastrar foto del vehículo">
+                                        <div class="liquidDropIconWrap">
+                                            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                                <polyline points="17 8 12 3 7 8"/>
+                                                <line x1="12" y1="3" x2="12" y2="15"/>
+                                            </svg>
+                                        </div>
+                                        <p class="fw-semibold mb-1" style="color: var(--textPrimary); font-size: 1rem;">
+                                            Arrastra la foto de tu vehículo aquí
+                                        </p>
+                                        <p class="text-secondary small mb-3">o</p>
+                                        <button type="button" id="btnSeleccionarFoto" class="btnApplePrimary btnAppleSmall">
+                                            Elegir archivo en mi equipo
+                                        </button>
+                                        <p class="text-secondary mt-3 mb-0" style="font-size: 0.78rem;">
+                                            Formatos soportados: JPG, PNG o WEBP
+                                        </p>
+                                    </div>
+
+                                    <!-- Vista previa dentro del mismo cuadro cuando ya hay imagen elegida -->
+                                    <div id="previewCardVehiculo" class="liquidDropPreviewCard d-none">
+                                        <img id="previewImagenVehiculo" alt="Vista previa del vehículo" class="liquidDropPreviewImg">
+                                        <div class="liquidDropPreviewBar">
+                                            <div class="text-truncate" style="max-width: 60%;">
+                                                <div id="previewNombreArchivo" class="small fw-semibold text-white text-truncate">vehiculo.jpg</div>
+                                                <div id="previewTamanoArchivo" class="text-secondary" style="font-size: 0.78rem;">0 MB</div>
+                                            </div>
+                                            <div class="d-flex gap-2">
+                                                <button type="button" id="btnCambiarFoto" class="btnAppleSecondary btnAppleSmall">Cambiar</button>
+                                                <button type="button" id="btnQuitarFoto" class="btnAppleDanger">Quitar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btnApplePrimary w-100 justify-content-center">Publicar en el Catálogo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 3. CONSULTAR PROCESOS ==================== -->
+        <section th:if="${clienteLogueado != null && tabActiva == 'procesos'}">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <h2 class="sectionHeading mb-3">Mis Ofertas de Compra</h2>
+                    <div class="appleCard p-4 text-center" th:if="${#lists.isEmpty(misOfertasEnviadas)}">
+                        <p class="text-secondary small mb-3">Aún no has hecho ofertas por ningún vehículo.</p>
+                        <a th:href="@{/portal(tab='catalogo')}" class="btnAppleSecondary btnAppleSmall">Explorar catálogo</a>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(misOfertasEnviadas)}">
+                        <div class="orderStyleCard" th:each="compra : ${misOfertasEnviadas}">
+                            <div class="orderCardTop">
+                                <div class="metaGroup">
+                                    <div>
+                                        <span class="metaLabel">Proceso</span>
+                                        <span class="metaValue" th:text="'#' + ${compra.id}">#1</span>
+                                    </div>
+                                    <div>
+                                        <span class="metaLabel">Vehículo</span>
+                                        <span class="metaValue" th:text="'#' + ${compra.vehicleId}">#5001</span>
+                                    </div>
+                                </div>
+                                <span class="statusPill"
+                                      th:classappend="${compra.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${compra.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
+                                      th:text="${compra.agreementStatus}">PENDIENTE</span>
+                            </div>
+                            <div class="orderCardBody">
+                                <div>
+                                    <span class="metaLabel">Mi Oferta Enviada</span>
+                                    <span class="fs-5 fw-semibold"
+                                          th:text="${compra.agreedAmount != null ? '$' + #numbers.formatDecimal(compra.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a th:if="${compra.agreementStatus == 'FINALIZADO'}"
+                                       th:href="@{/portal/order/{agreementId}/pdf(agreementId=${compra.id})}"
+                                       class="btnApplePrimary btnAppleSmall">
+                                        Descargar Orden PDF
+                                    </a>
+                                    <form th:if="${compra.agreementStatus == 'PENDIENTE'}"
+                                          th:action="@{/portal/process/{agreementId}(agreementId=${compra.id})}" method="post"
+                                          onsubmit="return confirm('¿Deseas retirar tu oferta de compra?');">
+                                        <input type="hidden" name="decision" value="CANCELADO">
+                                        <button type="submit" class="btnAppleDanger">Retirar Oferta</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <h2 class="sectionHeading mb-3">Ofertas Recibidas por mis Autos</h2>
+                    <div class="appleCard p-4 text-center" th:if="${#lists.isEmpty(ofertasRecibidas)}">
+                        <p class="text-secondary small mb-0">Todavía no has recibido ofertas por tus vehículos publicados.</p>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(ofertasRecibidas)}">
+                        <div class="orderStyleCard" th:each="venta : ${ofertasRecibidas}">
+                            <div class="orderCardTop">
+                                <div class="metaGroup">
+                                    <div>
+                                        <span class="metaLabel">Proceso</span>
+                                        <span class="metaValue" th:text="'#' + ${venta.id}">#1</span>
+                                    </div>
+                                    <div>
+                                        <span class="metaLabel">Mi Vehículo</span>
+                                        <span class="metaValue" th:text="'#' + ${venta.vehicleId}">#5001</span>
+                                    </div>
+                                    <div>
+                                        <span class="metaLabel">Comprador ID</span>
+                                        <span class="metaValue" th:text="${venta.buyerId}">1009876543</span>
+                                    </div>
+                                </div>
+                                <span class="statusPill"
+                                      th:classappend="${venta.agreementStatus == 'FINALIZADO'} ? 'statusDisponible' : (${venta.agreementStatus == 'CANCELADO'} ? 'statusVendido' : 'statusReservado')"
+                                      th:text="${venta.agreementStatus}">PENDIENTE</span>
+                            </div>
+                            <div class="orderCardBody">
+                                <div>
+                                    <span class="metaLabel">Monto Ofertado</span>
+                                    <span class="fs-5 fw-semibold"
+                                          th:text="${venta.agreedAmount != null ? '$' + #numbers.formatDecimal(venta.agreedAmount, 1, 'POINT', 0, 'COMMA') : '$0'}">$75.000.000</span>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a th:if="${venta.agreementStatus == 'FINALIZADO'}"
+                                       th:href="@{/portal/order/{agreementId}/pdf(agreementId=${venta.id})}"
+                                       class="btnApplePrimary btnAppleSmall">
+                                        Descargar Orden PDF
+                                    </a>
+                                    <form th:if="${venta.agreementStatus == 'PENDIENTE'}"
+                                          th:action="@{/portal/process/{agreementId}(agreementId=${venta.id})}" method="post">
+                                        <input type="hidden" name="decision" value="FINALIZADO">
+                                        <button type="submit" class="btnApplePrimary btnAppleSmall">Aceptar Venta</button>
+                                    </form>
+                                    <form th:if="${venta.agreementStatus == 'PENDIENTE'}"
+                                          th:action="@{/portal/process/{agreementId}(agreementId=${venta.id})}" method="post">
+                                        <input type="hidden" name="decision" value="CANCELADO">
+                                        <button type="submit" class="btnAppleDanger">Rechazar</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== 4. PERFIL Y AUTOS PUBLICADOS ==================== -->
+        <section th:if="${clienteLogueado != null && tabActiva == 'perfil'}">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="appleCard p-4">
+                        <p class="eyebrowLabel">Perfil del Cliente</p>
+                        <h2 class="sectionHeading mb-3" th:text="${clienteLogueado.name}">Nombre Cliente</h2>
+
+                        <div class="mb-2">
+                            <span class="metaLabel">Documento / ID</span>
+                            <span class="metaValue" th:text="${clienteLogueado.id}">1001234567</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="metaLabel">Correo Electrónico</span>
+                            <span class="metaValue" th:text="${clienteLogueado.email}">correo@ejemplo.com</span>
+                        </div>
+                        <div class="mb-4">
+                            <span class="metaLabel">Teléfono</span>
+                            <span class="metaValue" th:text="${clienteLogueado.phoneNumber}">3001234567</span>
+                        </div>
+
+                        <a th:href="@{/portal(tab='publicar')}" class="btnApplePrimary w-100 justify-content-center">
+                            Publicar un nuevo auto
+                        </a>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <div class="d-flex justify-content-between align-items-baseline mb-3">
+                        <h2 class="sectionHeading mb-0">Autos que tengo publicados</h2>
+                        <span class="text-secondary small" th:text="${#lists.size(misVehiculos)} + ' publicados'">0 publicados</span>
+                    </div>
+
+                    <div class="appleCard p-5 text-center" th:if="${#lists.isEmpty(misVehiculos)}">
+                        <h5 class="fw-semibold mb-2">Aún no tienes vehículos publicados</h5>
+                        <p class="text-secondary small mb-3">Publica tu auto para que otros clientes puedan verlo en el catálogo y enviarte ofertas.</p>
+                        <a th:href="@{/portal(tab='publicar')}" class="btnApplePrimary btnAppleSmall">Publicar mi primer auto</a>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(misVehiculos)}">
+                        <div class="orderStyleCard" th:each="miAuto : ${misVehiculos}">
+                            <div class="orderCardTop">
+                                <div class="metaGroup">
+                                    <div>
+                                        <span class="metaLabel">Código</span>
+                                        <span class="metaValue" th:text="'#' + ${miAuto.carId}">#5001</span>
+                                    </div>
+                                    <div>
+                                        <span class="metaLabel">Placa</span>
+                                        <span class="metaValue" th:text="${miAuto.plate}">KLM456</span>
+                                    </div>
+                                    <div>
+                                        <span class="metaLabel">Año</span>
+                                        <span class="metaValue" th:text="${miAuto.releaseYear}">2021</span>
+                                    </div>
+                                </div>
+                                <span class="statusPill"
+                                      th:classappend="${miAuto.salesStatus == 'VENDIDO'} ? 'statusVendido' : (${miAuto.salesStatus == 'RESERVADO'} ? 'statusReservado' : 'statusDisponible')"
+                                      th:text="${miAuto.salesStatus}">DISPONIBLE</span>
+                            </div>
+
+                            <div class="orderCardBody">
+                                <div class="d-flex align-items-center gap-3">
+                                    <img th:if="${miAuto.imageType != null && !miAuto.imageType.isBlank()}"
+                                         th:src="@{/portal/vehicle/{id}/image(id=${miAuto.carId})}"
+                                         th:alt="${miAuto.model}"
+                                         class="vehicleProfileThumb">
+                                    <div>
+                                        <h5 class="fw-semibold mb-1" th:text="${miAuto.model}">Mazda 3 Touring</h5>
+                                        <p class="text-secondary small mb-0">
+                                            <span th:text="${miAuto.type}">Sedan</span> •
+                                            Color <span th:text="${miAuto.color}">Negro</span> •
+                                            <span th:text="${miAuto.kms != null ? #numbers.formatInteger(miAuto.kms, 1, 'POINT') + ' km' : '0 km'}">1.000 km</span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="text-md-end">
+                                    <span class="metaLabel">Precio Publicado</span>
+                                    <span class="fs-5 fw-semibold"
+                                          style="font-variant-numeric: tabular-nums;"
+                                          th:text="${miAuto.price != null ? '$' + #numbers.formatDecimal(miAuto.price, 1, 'POINT', 0, 'COMMA') : '$0'}">$10.000.000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Liquid Glass para Hacer Oferta Instantánea -->
+    <div class="modal fade" id="modalOfertaCompra" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: rgba(27, 28, 34, 0.94); backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; color: var(--textPrimary);">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <div>
+                        <span class="eyebrowLabel mb-1 d-block">Oferta Directa</span>
+                        <h5 class="modal-title fw-semibold" id="modalTituloVehiculo">Vehículo</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body px-4 pt-3 pb-4">
+                    <form id="formOfertaModal" th:action="@{/portal/offer}" method="post">
+                        <input type="hidden" id="modalVehicleId" name="vehicleId">
+
+                        <img id="modalImagenVehiculo"
+                             alt="Foto del vehículo"
+                             class="vehicleModalImg mb-3 d-none">
+
+                        <p class="text-secondary small mb-3" id="modalSubtituloVehiculo">Propietario y placa</p>
+
+                        <div class="mb-4">
+                            <label class="appleFormLabel" for="modalAgreedAmount">Tu Oferta de Compra ($)</label>
+                            <input type="number" step="any" min="1" id="modalAgreedAmount" name="agreedAmount" class="appleInput" required>
+                            <span class="text-secondary small d-block mt-2">
+                                Al enviar la oferta, el vehículo quedará reservado para ti hasta que el vendedor la apruebe.
+                            </span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btnAppleSecondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btnApplePrimary">Confirmar Oferta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="appleFooter">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
+            <span>Remaneja — Portal de Clientes</span>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const navbarEl = document.querySelector(".liquidNavbar");
+            if (navbarEl) {
+                const syncNavbarOffset = () => {
+                    document.body.style.paddingTop = `${navbarEl.offsetHeight}px`;
+                };
+                syncNavbarOffset();
+                window.addEventListener("resize", syncNavbarOffset);
+            }
+
+            document.addEventListener("pointermove", (evento) => {
+                const btn = evento.target.closest(".btnApplePrimary, .btnAppleSecondary, .btnAppleDanger, .appleNavLink, .liquidGridItem, .liquidGlassTrigger, .liquidGlassPanel, .liquidDropzone");
+                if (!btn) return;
+                const rect = btn.getBoundingClientRect();
+                btn.style.setProperty("--mouseX", `${evento.clientX - rect.left}px`);
+                btn.style.setProperty("--mouseY", `${evento.clientY - rect.top}px`);
+            });
+
+            const liquidMenuBtn = document.getElementById("liquidMenuBtn");
+            const liquidMenuPanel = document.getElementById("liquidMenuPanel");
+            const liquidBackdrop = document.getElementById("liquidBackdrop");
+
+            if (liquidMenuBtn && liquidMenuPanel && liquidBackdrop) {
+                function closeLiquidMenu() {
+                    liquidMenuBtn.classList.remove("isOpen");
+                    liquidMenuBtn.setAttribute("aria-expanded", "false");
+                    liquidMenuPanel.classList.remove("open");
+                    liquidBackdrop.classList.remove("open");
+                }
+
+                liquidMenuBtn.addEventListener("click", () => {
+                    const estaAbierto = liquidMenuPanel.classList.contains("open");
+                    if (estaAbierto) {
+                        closeLiquidMenu();
+                    } else {
+                        liquidMenuBtn.classList.add("isOpen");
+                        liquidMenuBtn.setAttribute("aria-expanded", "true");
+                        liquidMenuPanel.classList.add("open");
+                        liquidBackdrop.classList.add("open");
+                    }
+                });
+
+                liquidBackdrop.addEventListener("click", closeLiquidMenu);
+                window.addEventListener("resize", () => {
+                    if (window.innerWidth >= 768) closeLiquidMenu();
+                });
+            }
+
+            // ==================== LIQUID GLASS DROPZONE ====================
+            const inputImagen = document.getElementById("imagenFile");
+            const dropzone = document.getElementById("dropzoneVehiculo");
+            const btnSeleccionarFoto = document.getElementById("btnSeleccionarFoto");
+            const previewCard = document.getElementById("previewCardVehiculo");
+            const previewImagen = document.getElementById("previewImagenVehiculo");
+            const previewNombre = document.getElementById("previewNombreArchivo");
+            const previewTamano = document.getElementById("previewTamanoArchivo");
+            const btnCambiarFoto = document.getElementById("btnCambiarFoto");
+            const btnQuitarFoto = document.getElementById("btnQuitarFoto");
+
+            function formatearTamano(bytes) {
+                if (bytes < 1024 * 1024) {
+                    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+                }
+                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+            }
+
+            function mostrarVistaPrevia(archivo) {
+                if (!archivo || !archivo.type.startsWith("image/")) {
+                    alert("Selecciona un archivo de imagen válido (JPG, PNG o WEBP).");
+                    limpiarFoto();
+                    return;
+                }
+                previewImagen.src = URL.createObjectURL(archivo);
+                previewNombre.textContent = archivo.name;
+                previewTamano.textContent = formatearTamano(archivo.size);
+                dropzone.classList.add("d-none");
+                previewCard.classList.remove("d-none");
+            }
+
+            function limpiarFoto() {
+                if (inputImagen) inputImagen.value = "";
+                if (previewImagen) previewImagen.removeAttribute("src");
+                if (previewCard) previewCard.classList.add("d-none");
+                if (dropzone) dropzone.classList.remove("d-none", "isDragOver");
+            }
+
+            if (inputImagen && dropzone) {
+                dropzone.addEventListener("click", (e) => {
+                    if (e.target === btnSeleccionarFoto) return;
+                    inputImagen.click();
+                });
+
+                dropzone.addEventListener("keydown", (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        inputImagen.click();
+                    }
+                });
+
+                if (btnSeleccionarFoto) {
+                    btnSeleccionarFoto.addEventListener("click", (e) => {
+                        e.stopPropagation();
+                        inputImagen.click();
+                    });
+                }
+
+                if (btnCambiarFoto) {
+                    btnCambiarFoto.addEventListener("click", () => inputImagen.click());
+                }
+
+                if (btnQuitarFoto) {
+                    btnQuitarFoto.addEventListener("click", limpiarFoto);
+                }
+
+                inputImagen.addEventListener("change", () => {
+                    const archivo = inputImagen.files && inputImagen.files[0];
+                    if (archivo) mostrarVistaPrevia(archivo);
+                });
+
+                ["dragenter", "dragover"].forEach(evtName => {
+                    dropzone.addEventListener(evtName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.classList.add("isDragOver");
+                    });
+                });
+
+                ["dragleave", "drop"].forEach(evtName => {
+                    dropzone.addEventListener(evtName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dropzone.classList.remove("isDragOver");
+                    });
+                });
+
+                dropzone.addEventListener("drop", (e) => {
+                    const archivos = e.dataTransfer && e.dataTransfer.files;
+                    if (!archivos || !archivos.length) return;
+                    const dt = new DataTransfer();
+                    dt.items.add(archivos[0]);
+                    inputImagen.files = dt.files;
+                    mostrarVistaPrevia(archivos[0]);
+                });
+            }
+
+            // ==================== MODAL OFERTA DE COMPRA ====================
+            const modalElemento = document.getElementById("modalOfertaCompra");
+            if (!modalElemento) return;
+            const modalBootstrap = new bootstrap.Modal(modalElemento);
+            const modalImg = document.getElementById("modalImagenVehiculo");
+
+            if (modalImg) {
+                modalImg.addEventListener("error", () => {
+                    modalImg.classList.add("d-none");
+                    modalImg.removeAttribute("src");
+                });
+            }
+
+            document.querySelectorAll(".btnAbrirOferta").forEach(boton => {
+                boton.addEventListener("click", () => {
+                    document.getElementById("modalVehicleId").value = boton.dataset.carId;
+                    document.getElementById("modalTituloVehiculo").textContent = boton.dataset.model + " (" + boton.dataset.plate + ")";
+                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + boton.dataset.owner;
+
+                    if (modalImg) {
+                        const imageUrl = boton.dataset.imageUrl;
+                        if (imageUrl) {
+                            modalImg.src = imageUrl;
+                            modalImg.alt = boton.dataset.model || "Foto del vehículo";
+                            modalImg.classList.remove("d-none");
+                        } else {
+                            modalImg.classList.add("d-none");
+                            modalImg.removeAttribute("src");
+                        }
+                    }
+
+                    const precioLimpio = (boton.dataset.price || "").toString().replace(",", ".");
+                    document.getElementById("modalAgreedAmount").value = precioLimpio;
+                    modalBootstrap.show();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
