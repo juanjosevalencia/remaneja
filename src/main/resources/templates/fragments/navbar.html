@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <body>
 
@@ -15,16 +15,16 @@
                 <div class="liquidDesktopLinks">
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'resumen'} ? 'active' : ''" th:href="@{/admin}">Resumen</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'usuarios'} ? 'active' : ''" th:href="@{/web/users}">Usuarios</a>
-                    <a class="appleNavLink" th:classappend="${paginaActiva == 'vehiculos'} ? 'active' : ''" th:href="@{/web/vehicles}">Vehículos</a>
+                    <a class="appleNavLink" th:classappend="${paginaActiva == 'vehiculos'} ? 'active' : ''" th:href="@{/web/vehicles}">VehÃ­culos</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'acuerdos'} ? 'active' : ''" th:href="@{/web/purchaseagreements}">Acuerdos</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'informes'} ? 'active' : ''" th:href="@{/web/reports}">Informes</a>
                     <a class="appleNavLink" th:classappend="${paginaActiva == 'negocio'} ? 'active' : ''" th:href="@{/web/business}">Negocio</a>
-                    <a class="liquidGridItem" th:classappend="${paginaActiva == 'logout'} ? 'active' : ''" th:href="@{/logout}">Cerrar sesión</a>
+                    <a class="liquidGridItem" th:classappend="${paginaActiva == 'logout'} ? 'active' : ''" th:href="@{/logout}">Cerrar sesiÃ³n</a>
                 </div>
 
-                <!-- Botón píldora Liquid Glass (Móvil) -->
-                <button type="button" class="liquidGlassTrigger" id="liquidMenuBtn" aria-expanded="false" aria-label="Abrir navegación">
-                    <span>Menú</span>
+                <!-- BotÃ³n pÃ­ldora Liquid Glass (MÃ³vil) -->
+                <button type="button" class="liquidGlassTrigger" id="liquidMenuBtn" aria-expanded="false" aria-label="Abrir navegaciÃ³n">
+                    <span>MenÃº</span>
                     <span class="liquidMenuIcon">
                         <span></span>
                         <span></span>
@@ -39,7 +39,7 @@
         <!-- Panel flotante Liquid Glass 2x3 -->
         <div class="liquidGlassPanel" id="liquidMenuPanel">
             <div class="liquidPanelHeader">
-                <span class="liquidPanelTitle">Navegación Remaneja</span>
+                <span class="liquidPanelTitle">NavegaciÃ³n Remaneja</span>
                 <span class="liquidPanelTitle" style="color: var(--accentBlue);" th:text="${#strings.capitalize(paginaActiva)}">Resumen</span>
             </div>
 
@@ -51,12 +51,12 @@
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'usuarios'} ? 'active' : ''" th:href="@{/web/users}">
                     <span class="liquidItemName">Usuarios</span>
-                    <span class="liquidItemDesc">Cuentas y dueños</span>
+                    <span class="liquidItemDesc">Cuentas y dueÃ±os</span>
                 </a>
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'vehiculos'} ? 'active' : ''" th:href="@{/web/vehicles}">
-                    <span class="liquidItemName">Vehículos</span>
-                    <span class="liquidItemDesc">Catálogo e inventario</span>
+                    <span class="liquidItemName">VehÃ­culos</span>
+                    <span class="liquidItemDesc">CatÃ¡logo e inventario</span>
                 </a>
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'acuerdos'} ? 'active' : ''" th:href="@{/web/purchaseagreements}">
@@ -66,7 +66,7 @@
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'informes'} ? 'active' : ''" th:href="@{/web/reports}">
                     <span class="liquidItemName">Informes</span>
-                    <span class="liquidItemDesc">Filtros y métricas</span>
+                    <span class="liquidItemDesc">Filtros y mÃ©tricas</span>
                 </a>
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'negocio'} ? 'active' : ''" th:href="@{/web/business}">
@@ -75,7 +75,7 @@
                 </a>
 
                 <a class="liquidGridItem" th:classappend="${paginaActiva == 'logout'} ? 'active' : ''" th:href="@{/logout}"></a>
-                    <span class="liquidItemName">Cerrar sesión</span>
+                    <span class="liquidItemName">Cerrar sesiÃ³n</span>
                     <span class="liquidItemDesc">Salir de tu cuenta</span>
                 </a>
 
