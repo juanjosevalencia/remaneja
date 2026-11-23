@@ -3,6 +3,7 @@ package com.example.demo.control;
 import com.example.demo.model.PurchaseAgreement;
 import com.example.demo.model.User;
 import com.example.demo.model.Vehicle;
+import com.example.demo.repository.VehicleRepository;
 import com.example.demo.service.PurchaseAgreementService;
 import com.example.demo.service.PurchaseOrderPdfService;
 import com.example.demo.service.UserService;
@@ -34,6 +35,7 @@ public class ClientPortalControl {
 
     private final UserService userService;
     private final VehicleService vehicleService;
+    private final VehicleRepository vehicleRepository;
     private final PurchaseAgreementService purchaseAgreementService;
     private final PurchaseOrderPdfService purchaseOrderPdfService;
 
@@ -41,11 +43,13 @@ public class ClientPortalControl {
             UserService userService,
             VehicleService vehicleService,
             PurchaseAgreementService purchaseAgreementService,
-            PurchaseOrderPdfService purchaseOrderPdfService) {
+            PurchaseOrderPdfService purchaseOrderPdfService,
+            VehicleRepository vehicleRepository) {
         this.userService = userService;
         this.vehicleService = vehicleService;
         this.purchaseAgreementService = purchaseAgreementService;
         this.purchaseOrderPdfService = purchaseOrderPdfService;
+        this.vehicleRepository = vehicleRepository;
     }
 
     private boolean esAdmin(User usuario) {
@@ -404,4 +408,90 @@ public class ClientPortalControl {
 
         return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
     }
+
+    //MODULO DE ELIMINACIÓN Y EDICIÓN DE VEHICULOS
+    @PostMapping("/portal/vehicle/update")
+    public String actualizarVehiculoCliente(
+            @RequestParam("carId") Integer carId,
+            @RequestParam("plate") String plate,
+            @RequestParam("model") String model,
+            @RequestParam("type") String type,
+            @RequestParam("color") String color,
+            @RequestParam("releaseYear") Integer releaseYear,
+            @RequestParam("kms") Integer kms,
+            @RequestParam("price") BigDecimal price,
+            @RequestParam(value = "imagenFile", required = false) MultipartFile imagenFile,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        User clienteLogueado = (User) session.getAttribute("clienteLogueado");
+        if (clienteLogueado == null) {
+            return "redirect:/login";
+        }
+
+        Vehicle vehiculo = vehicleRepository.findById(carId).orElse(null);
+        if (vehiculo == null || !vehiculo.getOwnerId().equals(clienteLogueado.getId())) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No tienes permiso para editar este vehículo.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        if ("VENDIDO".equalsIgnoreCase(vehiculo.getSalesStatus())) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No puedes editar un vehículo que ya fue vendido.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        vehiculo.setPlate(plate.trim().toUpperCase());
+        vehiculo.setModel(model.trim());
+        vehiculo.setType(type.trim());
+        vehiculo.setColor(color.trim());
+        vehiculo.setReleaseYear(releaseYear);
+        vehiculo.setKms(kms);
+        vehiculo.setPrice(price);
+
+        try {
+            if (imagenFile != null && !imagenFile.isEmpty()) {
+                vehiculo.setImageData(imagenFile.getBytes());
+                vehiculo.setImageType(imagenFile.getContentType());
+            }
+            vehicleRepository.save(vehiculo);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Información del vehículo actualizada correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el vehículo: " + e.getMessage());
+        }
+
+        return "redirect:/portal?tab=perfil";
+    }
+
+    @PostMapping("/portal/vehicle/delete/{carId}")
+    public String eliminarVehiculoCliente(
+            @PathVariable("carId") Integer carId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        User clienteLogueado = (User) session.getAttribute("clienteLogueado");
+        if (clienteLogueado == null) {
+            return "redirect:/login";
+        }
+
+        Vehicle vehiculo = vehicleRepository.findById(carId).orElse(null);
+        if (vehiculo == null || !vehiculo.getOwnerId().equals(clienteLogueado.getId())) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No tienes permiso para eliminar este vehículo.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        if ("VENDIDO".equalsIgnoreCase(vehiculo.getSalesStatus())) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No es posible eliminar un vehículo con venta finalizada.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        try {
+            vehicleRepository.delete(vehiculo);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Vehículo eliminado de tu lista.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No se puede eliminar este vehículo porque tiene procesos asociados.");
+        }
+
+        return "redirect:/portal?tab=perfil";
+    }
+
 }
