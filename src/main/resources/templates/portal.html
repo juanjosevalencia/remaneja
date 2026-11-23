@@ -8,7 +8,6 @@
     <link rel="stylesheet" th:href="@{/css/remaneja.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg(v=2)}">
     <style>
-        
         /* ==================== IMÁGENES PROPORCIONALES (3 COLUMNAS EN PC) ==================== */
         .vehicleCatalogImg {
             width: 100%;
@@ -627,9 +626,34 @@
                                         <span class="metaValue" th:text="${miAuto.releaseYear}">2021</span>
                                     </div>
                                 </div>
-                                <span class="statusPill"
-                                      th:classappend="${miAuto.salesStatus == 'VENDIDO'} ? 'statusVendido' : (${miAuto.salesStatus == 'RESERVADO'} ? 'statusReservado' : 'statusDisponible')"
-                                      th:text="${miAuto.salesStatus}">DISPONIBLE</span>
+
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="statusPill"
+                                          th:classappend="${miAuto.salesStatus == 'VENDIDO'} ? 'statusVendido' : (${miAuto.salesStatus == 'RESERVADO'} ? 'statusReservado' : 'statusDisponible')"
+                                          th:text="${miAuto.salesStatus}">DISPONIBLE</span>
+
+                                    <button type="button"
+                                            th:if="${miAuto.salesStatus != 'VENDIDO'}"
+                                            class="btnAppleSecondary btnAppleSmall btnEditarMiAuto"
+                                            th:attr="data-car-id=${miAuto.carId},
+                                                     data-plate=${miAuto.plate},
+                                                     data-model=${miAuto.model},
+                                                     data-type=${miAuto.type},
+                                                     data-color=${miAuto.color},
+                                                     data-year=${miAuto.releaseYear},
+                                                     data-kms=${miAuto.kms},
+                                                     data-price=${miAuto.price}">
+                                        Editar
+                                    </button>
+
+                                    <form th:if="${miAuto.salesStatus != 'VENDIDO'}"
+                                          th:action="@{/portal/vehicle/delete/{carId}(carId=${miAuto.carId})}"
+                                          method="post"
+                                          class="d-inline"
+                                          onsubmit="return confirm('¿Estás seguro de eliminar este vehículo de tu lista?');">
+                                        <button type="submit" class="btnAppleDanger btnAppleSmall">Eliminar</button>
+                                    </form>
+                                </div>
                             </div>
 
                             <div class="orderCardBody">
@@ -696,6 +720,75 @@
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btnAppleSecondary" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btnApplePrimary">Confirmar Oferta</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Liquid Glass para Editar Vehículo del Cliente -->
+    <div class="modal fade" id="modalEditarMiAuto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="background: rgba(27, 28, 34, 0.94); backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; color: var(--textPrimary);">
+                <div class="modal-header border-0 pb-0 pt-4 px-4">
+                    <div>
+                        <span class="eyebrowLabel mb-1 d-block">Actualizar Publicación</span>
+                        <h5 class="modal-title fw-semibold" id="modalEditarTitulo">Editar Vehículo</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+
+                <div class="modal-body px-4 pt-3 pb-4">
+                    <form th:action="@{/portal/vehicle/update}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" id="editCarId" name="carId">
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-5">
+                                <label class="appleFormLabel" for="editPlate">Placa</label>
+                                <input type="text" id="editPlate" name="plate" class="appleInput" maxlength="20" required>
+                            </div>
+                            <div class="col-sm-7">
+                                <label class="appleFormLabel" for="editModel">Marca y Modelo</label>
+                                <input type="text" id="editModel" name="model" class="appleInput" maxlength="100" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="appleFormLabel" for="editType">Tipo de Carrocería</label>
+                                <input type="text" id="editType" name="type" class="appleInput" maxlength="50" required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="appleFormLabel" for="editColor">Color</label>
+                                <input type="text" id="editColor" name="color" class="appleInput" maxlength="50" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-4">
+                                <label class="appleFormLabel" for="editReleaseYear">Año</label>
+                                <input type="number" id="editReleaseYear" name="releaseYear" class="appleInput" min="1950" max="2030" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="appleFormLabel" for="editKms">Kilometraje</label>
+                                <input type="number" id="editKms" name="kms" class="appleInput" min="0" required>
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="appleFormLabel" for="editPrice">Precio ($)</label>
+                                <input type="number" step="any" min="1" id="editPrice" name="price" class="appleInput" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="appleFormLabel" for="editImagenFile">Cambiar Foto (opcional)</label>
+                            <input type="file" id="editImagenFile" name="imagenFile" accept="image/*" class="appleInput">
+                            <span class="text-secondary small d-block mt-1">Si no eliges una nueva imagen, se conservará la foto actual.</span>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btnAppleSecondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btnApplePrimary">Guardar Cambios</button>
                         </div>
                     </form>
                 </div>
@@ -858,40 +951,62 @@
 
             // ==================== MODAL OFERTA DE COMPRA ====================
             const modalElemento = document.getElementById("modalOfertaCompra");
-            if (!modalElemento) return;
-            const modalBootstrap = new bootstrap.Modal(modalElemento);
-            const modalImg = document.getElementById("modalImagenVehiculo");
+            if (modalElemento) {
+                const modalBootstrap = new bootstrap.Modal(modalElemento);
+                const modalImg = document.getElementById("modalImagenVehiculo");
 
-            if (modalImg) {
-                modalImg.addEventListener("error", () => {
-                    modalImg.classList.add("d-none");
-                    modalImg.removeAttribute("src");
+                if (modalImg) {
+                    modalImg.addEventListener("error", () => {
+                        modalImg.classList.add("d-none");
+                        modalImg.removeAttribute("src");
+                    });
+                }
+
+                document.querySelectorAll(".btnAbrirOferta").forEach(boton => {
+                    boton.addEventListener("click", () => {
+                        document.getElementById("modalVehicleId").value = boton.dataset.carId;
+                        document.getElementById("modalTituloVehiculo").textContent = boton.dataset.model + " (" + boton.dataset.plate + ")";
+                        document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + (boton.dataset.owner || "Vendedor verificado");
+
+                        if (modalImg) {
+                            const imageUrl = boton.dataset.imageUrl;
+                            if (imageUrl) {
+                                modalImg.src = imageUrl;
+                                modalImg.alt = boton.dataset.model || "Foto del vehículo";
+                                modalImg.classList.remove("d-none");
+                            } else {
+                                modalImg.classList.add("d-none");
+                                modalImg.removeAttribute("src");
+                            }
+                        }
+
+                        const precioLimpio = (boton.dataset.price || "").toString().replace(",", ".");
+                        document.getElementById("modalAgreedAmount").value = precioLimpio;
+                        modalBootstrap.show();
+                    });
                 });
             }
 
-            document.querySelectorAll(".btnAbrirOferta").forEach(boton => {
-                boton.addEventListener("click", () => {
-                    document.getElementById("modalVehicleId").value = boton.dataset.carId;
-                    document.getElementById("modalTituloVehiculo").textContent = boton.dataset.model + " (" + boton.dataset.plate + ")";
-                    document.getElementById("modalSubtituloVehiculo").textContent = "Propietario: " + (boton.dataset.owner || "Vendedor verificado");
-
-                    if (modalImg) {
-                        const imageUrl = boton.dataset.imageUrl;
-                        if (imageUrl) {
-                            modalImg.src = imageUrl;
-                            modalImg.alt = boton.dataset.model || "Foto del vehículo";
-                            modalImg.classList.remove("d-none");
-                        } else {
-                            modalImg.classList.add("d-none");
-                            modalImg.removeAttribute("src");
-                        }
-                    }
-
-                    const precioLimpio = (boton.dataset.price || "").toString().replace(",", ".");
-                    document.getElementById("modalAgreedAmount").value = precioLimpio;
-                    modalBootstrap.show();
+            // ==================== MODAL EDITAR MI VEHÍCULO ====================
+            const modalEditarEl = document.getElementById("modalEditarMiAuto");
+            if (modalEditarEl) {
+                const modalEditarBootstrap = new bootstrap.Modal(modalEditarEl);
+                document.querySelectorAll(".btnEditarMiAuto").forEach(boton => {
+                    boton.addEventListener("click", () => {
+                        document.getElementById("editCarId").value = boton.dataset.carId;
+                        document.getElementById("modalEditarTitulo").textContent = `Editar #${boton.dataset.carId} — ${boton.dataset.model}`;
+                        document.getElementById("editPlate").value = boton.dataset.plate || "";
+                        document.getElementById("editModel").value = boton.dataset.model || "";
+                        document.getElementById("editType").value = boton.dataset.type || "";
+                        document.getElementById("editColor").value = boton.dataset.color || "";
+                        document.getElementById("editReleaseYear").value = boton.dataset.year || "";
+                        document.getElementById("editKms").value = boton.dataset.kms || 0;
+                        document.getElementById("editPrice").value = (boton.dataset.price || "").toString().replace(",", ".");
+                        document.getElementById("editImagenFile").value = "";
+                        modalEditarBootstrap.show();
+                    });
                 });
-            });
+            }
         });
     </script>
 </body>
