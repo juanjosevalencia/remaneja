@@ -3,6 +3,7 @@ package com.example.demo.control;
 import com.example.demo.model.PurchaseAgreement;
 import com.example.demo.model.User;
 import com.example.demo.model.Vehicle;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.repository.VehicleRepository;
 import com.example.demo.service.PurchaseAgreementService;
 import com.example.demo.service.PurchaseOrderPdfService;
@@ -34,6 +35,7 @@ public class ClientPortalControl {
     }
 
     private final UserService userService;
+    private final UserRepository userRepository;
     private final VehicleService vehicleService;
     private final VehicleRepository vehicleRepository;
     private final PurchaseAgreementService purchaseAgreementService;
@@ -44,8 +46,10 @@ public class ClientPortalControl {
             VehicleService vehicleService,
             PurchaseAgreementService purchaseAgreementService,
             PurchaseOrderPdfService purchaseOrderPdfService,
+            UserRepository userRepository,
             VehicleRepository vehicleRepository) {
         this.userService = userService;
+        this.userRepository = userRepository;
         this.vehicleService = vehicleService;
         this.purchaseAgreementService = purchaseAgreementService;
         this.purchaseOrderPdfService = purchaseOrderPdfService;
@@ -489,6 +493,55 @@ public class ClientPortalControl {
             redirectAttributes.addFlashAttribute("mensajeExito", "Vehículo eliminado de tu lista.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "No se puede eliminar este vehículo porque tiene procesos asociados.");
+        }
+
+        return "redirect:/portal?tab=perfil";
+    }
+
+    @PostMapping("/portal/profile/update")
+    public String actualizarPerfilCliente(
+            @RequestParam("name") String name,
+            @RequestParam("email") String email,
+            @RequestParam("phoneNumber") String phoneNumber,
+            @RequestParam(value = "newPassword", required = false) String newPassword,
+            @RequestParam(value = "confirmPassword", required = false) String confirmPassword,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        User clienteSesion = (User) session.getAttribute("clienteLogueado");
+        if (clienteSesion == null) {
+            return "redirect:/login";
+        }
+
+        if (name == null || name.isBlank() || email == null || email.isBlank()) {
+            redirectAttributes.addFlashAttribute("mensajeError", "El nombre y el correo electrónico son obligatorios.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        User usuarioDb = userRepository.findById(clienteSesion.getId()).orElse(null);
+        if (usuarioDb == null) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No se encontró el usuario en el sistema.");
+            return "redirect:/portal?tab=perfil";
+        }
+
+        usuarioDb.setName(name.trim());
+        usuarioDb.setEmail(email.trim());
+        usuarioDb.setPhoneNumber(phoneNumber != null ? phoneNumber.trim() : "");
+
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (!newPassword.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("mensajeError", "La nueva contraseña y su confirmación no coinciden.");
+                return "redirect:/portal?tab=perfil";
+            }
+            usuarioDb.setPassword(newPassword);
+        }
+
+        try {
+            User guardado = userRepository.save(usuarioDb);
+            session.setAttribute("clienteLogueado", guardado);
+            redirectAttributes.addFlashAttribute("mensajeExito", "Tus datos de perfil se actualizaron correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("mensajeError", "No fue posible guardar los cambios: " + e.getMessage());
         }
 
         return "redirect:/portal?tab=perfil";
