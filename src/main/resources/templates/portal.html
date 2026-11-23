@@ -64,6 +64,11 @@
             transition: border-color 0.25s ease, background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
         }
 
+        .liquidDropzone--compact {
+            min-height: 165px;
+            padding: 1.35rem 1.25rem;
+        }
+
         .liquidDropzone::before {
             content: "";
             position: absolute;
@@ -107,6 +112,13 @@
             border: 1px solid rgba(10, 132, 255, 0.38);
             color: #4da3ff;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 20px rgba(10, 132, 255, 0.15);
+        }
+
+        .liquidDropzone--compact .liquidDropIconWrap {
+            width: 46px;
+            height: 46px;
+            margin-bottom: 0.65rem;
+            border-radius: 14px;
         }
 
         .liquidDropPreviewCard {
@@ -653,7 +665,8 @@
                                                      data-color=${miAuto.color},
                                                      data-year=${miAuto.releaseYear},
                                                      data-kms=${miAuto.kms},
-                                                     data-price=${miAuto.price}">
+                                                     data-price=${miAuto.price},
+                                                     data-image-url=${(miAuto.imageType != null && !miAuto.imageType.isBlank()) ? '/portal/vehicle/' + miAuto.carId + '/image' : ''}">
                                         Editar
                                     </button>
 
@@ -740,7 +753,7 @@
 
     <!-- Modal Liquid Glass para Editar Vehículo del Cliente -->
     <div class="modal fade" id="modalEditarMiAuto" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="background: rgba(27, 28, 34, 0.94); backdrop-filter: blur(28px); border: 1px solid rgba(255,255,255,0.16); border-radius: 22px; color: var(--textPrimary);">
                 <div class="modal-header border-0 pb-0 pt-4 px-4">
                     <div>
@@ -791,10 +804,42 @@
                             </div>
                         </div>
 
+                        <!-- Cuadro Liquid Glass con Recuadro Punteado Interior para Cambiar Foto -->
                         <div class="mb-4">
-                            <label class="appleFormLabel" for="editImagenFile">Cambiar Foto (opcional)</label>
-                            <input type="file" id="editImagenFile" name="imagenFile" accept="image/*" class="appleInput">
-                            <span class="text-secondary small d-block mt-1">Si no eliges una nueva imagen, se conservará la foto actual.</span>
+                            <label class="appleFormLabel mb-2 d-block" for="editImagenFile">Cambiar Foto (opcional • máx. 10 MB)</label>
+                            <input type="file" id="editImagenFile" name="imagenFile" accept="image/*" class="d-none">
+
+                            <div class="liquidUploadShell">
+                                <div id="editDropzoneVehiculo" class="liquidDropzone liquidDropzone--compact" role="button" tabindex="0" aria-label="Seleccionar o arrastrar nueva foto del vehículo">
+                                    <div class="liquidDropIconWrap">
+                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                    </div>
+                                    <p class="fw-semibold mb-1" style="color: var(--textPrimary); font-size: 0.95rem;">
+                                        Arrastra una nueva foto aquí o haz clic para elegirla
+                                    </p>
+                                    <p class="text-secondary mb-0" style="font-size: 0.78rem;">
+                                        Si no eliges ninguna imagen, se conservará la foto actual
+                                    </p>
+                                </div>
+
+                                <div id="editPreviewCardVehiculo" class="liquidDropPreviewCard d-none">
+                                    <img id="editPreviewImagenVehiculo" alt="Vista previa del vehículo" class="liquidDropPreviewImg">
+                                    <div class="liquidDropPreviewBar">
+                                        <div class="text-truncate" style="max-width: 60%;">
+                                            <div id="editPreviewNombreArchivo" class="small fw-semibold text-white text-truncate">vehiculo.jpg</div>
+                                            <div id="editPreviewTamanoArchivo" class="text-secondary" style="font-size: 0.78rem;">0 MB</div>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" id="editBtnCambiarFoto" class="btnAppleSecondary btnAppleSmall">Cambiar</button>
+                                            <button type="button" id="editBtnQuitarFoto" class="btnAppleDanger">Quitar</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="d-flex justify-content-end gap-2">
@@ -923,102 +968,119 @@
                 });
             }
 
-            // ==================== LIQUID GLASS DROPZONE ====================
-            const inputImagen = document.getElementById("imagenFile");
-            const dropzone = document.getElementById("dropzoneVehiculo");
-            const btnSeleccionarFoto = document.getElementById("btnSeleccionarFoto");
-            const previewCard = document.getElementById("previewCardVehiculo");
-            const previewImagen = document.getElementById("previewImagenVehiculo");
-            const previewNombre = document.getElementById("previewNombreArchivo");
-            const previewTamano = document.getElementById("previewTamanoArchivo");
-            const btnCambiarFoto = document.getElementById("btnCambiarFoto");
-            const btnQuitarFoto = document.getElementById("btnQuitarFoto");
+            // ==================== HELPER REUTILIZABLE LIQUID GLASS DROPZONE ====================
+            function initLiquidDropzone({ inputEl, dropzoneEl, triggerBtnEl, previewCardEl, previewImgEl, previewNameEl, previewSizeEl, changeBtnEl, removeBtnEl }) {
+                if (!inputEl || !dropzoneEl) return { reset: () => {} };
 
-            function formatearTamano(bytes) {
-                if (bytes < 1024 * 1024) {
-                    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+                function formatSize(bytes) {
+                    if (bytes < 1024 * 1024) {
+                        return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+                    }
+                    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
                 }
-                return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-            }
 
-            function mostrarVistaPrevia(archivo) {
-                if (!archivo || !archivo.type.startsWith("image/")) {
-                    alert("Selecciona un archivo de imagen válido (JPG, PNG o WEBP).");
-                    limpiarFoto();
-                    return;
+                function reset() {
+                    inputEl.value = "";
+                    if (previewImgEl) previewImgEl.removeAttribute("src");
+                    if (previewCardEl) previewCardEl.classList.add("d-none");
+                    dropzoneEl.classList.remove("d-none", "isDragOver");
                 }
-                previewImagen.src = URL.createObjectURL(archivo);
-                previewNombre.textContent = archivo.name;
-                previewTamano.textContent = formatearTamano(archivo.size);
-                dropzone.classList.add("d-none");
-                previewCard.classList.remove("d-none");
-            }
 
-            function limpiarFoto() {
-                if (inputImagen) inputImagen.value = "";
-                if (previewImagen) previewImagen.removeAttribute("src");
-                if (previewCard) previewCard.classList.add("d-none");
-                if (dropzone) dropzone.classList.remove("d-none", "isDragOver");
-            }
+                function showPreview(file) {
+                    if (!file || !file.type.startsWith("image/")) {
+                        alert("Selecciona un archivo de imagen válido (JPG, PNG o WEBP).");
+                        reset();
+                        return;
+                    }
+                    if (previewImgEl) previewImgEl.src = URL.createObjectURL(file);
+                    if (previewNameEl) previewNameEl.textContent = file.name;
+                    if (previewSizeEl) previewSizeEl.textContent = formatSize(file.size);
+                    dropzoneEl.classList.add("d-none");
+                    if (previewCardEl) previewCardEl.classList.remove("d-none");
+                }
 
-            if (inputImagen && dropzone) {
-                dropzone.addEventListener("click", (e) => {
-                    if (e.target === btnSeleccionarFoto) return;
-                    inputImagen.click();
+                dropzoneEl.addEventListener("click", (e) => {
+                    if (triggerBtnEl && e.target === triggerBtnEl) return;
+                    inputEl.click();
                 });
 
-                dropzone.addEventListener("keydown", (e) => {
+                dropzoneEl.addEventListener("keydown", (e) => {
                     if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        inputImagen.click();
+                        inputEl.click();
                     }
                 });
 
-                if (btnSeleccionarFoto) {
-                    btnSeleccionarFoto.addEventListener("click", (e) => {
+                if (triggerBtnEl) {
+                    triggerBtnEl.addEventListener("click", (e) => {
                         e.stopPropagation();
-                        inputImagen.click();
+                        inputEl.click();
                     });
                 }
 
-                if (btnCambiarFoto) {
-                    btnCambiarFoto.addEventListener("click", () => inputImagen.click());
+                if (changeBtnEl) {
+                    changeBtnEl.addEventListener("click", () => inputEl.click());
                 }
 
-                if (btnQuitarFoto) {
-                    btnQuitarFoto.addEventListener("click", limpiarFoto);
+                if (removeBtnEl) {
+                    removeBtnEl.addEventListener("click", reset);
                 }
 
-                inputImagen.addEventListener("change", () => {
-                    const archivo = inputImagen.files && inputImagen.files[0];
-                    if (archivo) mostrarVistaPrevia(archivo);
+                inputEl.addEventListener("change", () => {
+                    const file = inputEl.files && inputEl.files[0];
+                    if (file) showPreview(file);
                 });
 
                 ["dragenter", "dragover"].forEach(evtName => {
-                    dropzone.addEventListener(evtName, (e) => {
+                    dropzoneEl.addEventListener(evtName, (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        dropzone.classList.add("isDragOver");
+                        dropzoneEl.classList.add("isDragOver");
                     });
                 });
 
                 ["dragleave", "drop"].forEach(evtName => {
-                    dropzone.addEventListener(evtName, (e) => {
+                    dropzoneEl.addEventListener(evtName, (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        dropzone.classList.remove("isDragOver");
+                        dropzoneEl.classList.remove("isDragOver");
                     });
                 });
 
-                dropzone.addEventListener("drop", (e) => {
-                    const archivos = e.dataTransfer && e.dataTransfer.files;
-                    if (!archivos || !archivos.length) return;
+                dropzoneEl.addEventListener("drop", (e) => {
+                    const files = e.dataTransfer && e.dataTransfer.files;
+                    if (!files || !files.length) return;
                     const dt = new DataTransfer();
-                    dt.items.add(archivos[0]);
-                    inputImagen.files = dt.files;
-                    mostrarVistaPrevia(archivos[0]);
+                    dt.items.add(files[0]);
+                    inputEl.files = dt.files;
+                    showPreview(files[0]);
                 });
+
+                return { reset };
             }
+
+            const publishDropzone = initLiquidDropzone({
+                inputEl: document.getElementById("imagenFile"),
+                dropzoneEl: document.getElementById("dropzoneVehiculo"),
+                triggerBtnEl: document.getElementById("btnSeleccionarFoto"),
+                previewCardEl: document.getElementById("previewCardVehiculo"),
+                previewImgEl: document.getElementById("previewImagenVehiculo"),
+                previewNameEl: document.getElementById("previewNombreArchivo"),
+                previewSizeEl: document.getElementById("previewTamanoArchivo"),
+                changeBtnEl: document.getElementById("btnCambiarFoto"),
+                removeBtnEl: document.getElementById("btnQuitarFoto")
+            });
+
+            const editDropzone = initLiquidDropzone({
+                inputEl: document.getElementById("editImagenFile"),
+                dropzoneEl: document.getElementById("editDropzoneVehiculo"),
+                previewCardEl: document.getElementById("editPreviewCardVehiculo"),
+                previewImgEl: document.getElementById("editPreviewImagenVehiculo"),
+                previewNameEl: document.getElementById("editPreviewNombreArchivo"),
+                previewSizeEl: document.getElementById("editPreviewTamanoArchivo"),
+                changeBtnEl: document.getElementById("editBtnCambiarFoto"),
+                removeBtnEl: document.getElementById("editBtnQuitarFoto")
+            });
 
             // ==================== MODAL OFERTA DE COMPRA ====================
             const modalElemento = document.getElementById("modalOfertaCompra");
@@ -1073,7 +1135,7 @@
                         document.getElementById("editReleaseYear").value = boton.dataset.year || "";
                         document.getElementById("editKms").value = boton.dataset.kms || 0;
                         document.getElementById("editPrice").value = (boton.dataset.price || "").toString().replace(",", ".");
-                        document.getElementById("editImagenFile").value = "";
+                        editDropzone.reset();
                         modalEditarBootstrap.show();
                     });
                 });
