@@ -113,13 +113,6 @@
                                 <p class="text-secondary small mb-0" th:text="${usuario.email}">juan@correo.com</p>
                             </div>
 
-                            <div class="d-flex align-items-center gap-2">
-                                <a th:href="@{/web/users/edit/{userId}(userId=${usuario.id})}" class="btnAppleSecondary btnAppleSmall">Editar</a>
-                                <form th:action="@{/web/users/delete/{userId}(userId=${usuario.id})}" method="post"
-                                      onsubmit="return confirm('¿Deseas eliminar este usuario del sistema?');">
-                                    <button type="submit" class="btnAppleDanger">Eliminar</button>
-                                </form>
-                            </div>
                         </div>
                     </div>
                 </div>
